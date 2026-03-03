@@ -264,9 +264,11 @@ L.R. designed the study, developed the corpus curation methodology, ran all eval
 
 ## Acknowledgments
 
-This work originated in VIS 161 (Systems and Networks at Scale) at the University of California, San Diego. The evaluation corpus was sourced from the New Lakota Dictionary, published by the Lakota Language Consortium.
+This work was inspired by themes explored in VIS 161 (Systems and Networks at Scale) at the University of California, San Diego, but was conducted independently. The evaluation corpus was sourced from the New Lakota Dictionary, published by the Lakota Language Consortium.
 
 ## Data Availability
+
+Code and aggregate results are available at https://github.com/robotson/lakota-translation-benchmark.
 
 - Evaluation corpus: 200 NLD/LLC sentence pairs (not included; see `data/example_pairs.json` for schema)
 - Aggregate results: `results/comparison.csv`
