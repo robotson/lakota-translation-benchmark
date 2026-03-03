@@ -1,0 +1,17 @@
+model,direction,mode,n_translations,n_refusals,n_empties,n_errors,chrf_mean,chrf_median,chrf_stdev,norm_chrf_mean,bleu_mean,conf_mean,conf_stdev
+gemini-3.1-pro,L→E,baseline,200,0,0,0,58.13,56.03,28.39,,42.87,,
+gemini-3.1-pro,L→E,thinking,199,1,0,0,58.67,56.62,28.37,58.67,42.99,0.93,0.06
+gemini-3.1-pro,E→L,baseline,199,1,0,0,29.70,26.76,16.54,36.55,19.85,0.73,0.15
+gemini-3.1-pro,E→L,thinking,200,0,0,0,32.10,27.73,16.24,37.90,18.90,0.83,0.11
+claude-opus-4-6,L→E,baseline,200,0,0,0,42.56,36.75,25.04,,25.45,,
+claude-opus-4-6,L→E,thinking,200,0,0,0,45.86,41.59,26.29,45.86,28.42,0.71,0.17
+claude-opus-4-6,E→L,baseline,200,0,0,0,22.33,20.32,11.69,,13.86,,
+claude-opus-4-6,E→L,thinking,198,0,0,2,26.66,24.27,12.18,33.36,16.15,0.45,0.15
+claude-sonnet-4-6,L→E,baseline,200,0,0,0,44.16,37.83,27.15,,27.34,,
+claude-sonnet-4-6,L→E,thinking,185,0,15,0,43.80,37.19,26.27,43.80,25.76,0.65,0.15
+claude-sonnet-4-6,E→L,baseline,200,0,0,0,19.91,18.20,8.47,,12.14,,
+claude-sonnet-4-6,E→L,thinking,194,4,2,0,22.80,20.66,10.43,28.02,14.75,0.31,0.11
+gpt-5.2,L→E,baseline,200,0,0,0,25.10,19.02,18.40,,12.46,,
+gpt-5.2,L→E,thinking,195,5,0,0,29.26,21.06,21.64,29.27,15.27,0.57,0.12
+gpt-5.2,E→L,baseline,195,0,5,0,15.48,14.81,5.67,,8.71,,
+gpt-5.2,E→L,thinking,188,12,0,0,18.82,17.43,7.92,22.54,12.63,0.46,0.11

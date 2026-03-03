@@ -1,0 +1,10 @@
+.env
+data/holdout*/
+data/*.json
+!data/example_pairs.json
+results/v2/
+results/v3/
+results/raw/
+__pycache__/
+*.pyc
+.DS_Store
