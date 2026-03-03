@@ -9,7 +9,7 @@ March 2026
 
 ## Abstract
 
-We evaluate four frontier large language models on bidirectional Lakota–English translation using 200 sentence pairs from the New Lakota Dictionary. Two experimental conditions are compared: a baseline with near-deterministic decoding and no extended thinking, and a second condition with extended thinking enabled at maximum provider settings. The best model (Gemini 3.1 Pro) achieves a mean chrF++ of 58.7 on Lakota→English and 32.1 on English→Lakota. Extended thinking improves scores by 3–4 chrF++ points for most models. No model produces reliable translation in either direction. Diacritic normalization analysis shows models have partial structural knowledge of Lakota morphology but lack orthographic precision. All results and evaluation code are publicly available.
+We evaluate four frontier large language models on bidirectional Lakota–English translation using 200 sentence pairs from the New Lakota Dictionary. Two experimental conditions are compared: a baseline with near-deterministic decoding and no extended thinking, and a second condition with extended thinking enabled at maximum provider settings. The best model (Gemini 3.1 Pro) achieves a mean chrF++ of 58.7 on Lakota→English and 32.1 on English→Lakota. Extended thinking improves scores by 3–4 chrF++ points for most models. No model produces reliable translation in either direction. Diacritic normalization analysis shows models have partial structural knowledge of Lakota morphology but lack orthographic precision. All results and evaluation code are publicly available at https://github.com/robotson/lakota-translation-benchmark.
 
 ## 1. Introduction
 
@@ -133,7 +133,7 @@ Table 1 reports the best-condition results for each model. For Gemini, baseline 
 | Claude Sonnet 4.6 | E→L | 194 | 22.8 | 10.4 | 20.7 | 14.8 |
 | GPT-5.2 | E→L | 188 | 18.8 | 7.9 | 17.4 | 12.6 |
 
-N < 200 reflects refusals, empty responses, or API errors excluded from scoring (§3.6). Standard deviation is across the 200 sentence pairs, not across runs.
+N < 200 reflects refusals, empty responses, or API errors excluded from scoring (§3.5). Standard deviation is across the 200 sentence pairs, not across runs.
 
 The model ranking is identical in both directions: Gemini > Opus > Sonnet > GPT-5.2. Every model scores substantially higher on Lakota→English than English→Lakota. The gap ranges from 10.5 points (GPT-5.2) to 26.6 points (Gemini). This asymmetry is consistent across all models: comprehension (recognizing Lakota patterns and producing English) is easier than generation (producing grammatically valid Lakota from English input).
 
@@ -152,7 +152,7 @@ Standard deviations are large — 22–28 points for L→E and 8–16 points for
 | Claude Sonnet 4.6 | E→L | 0% | 0% | 7% | 12.2 |
 | GPT-5.2 | E→L | 0% | 0% | 3% | 10.8 |
 
-Percentages are computed over scored translations (N in Table 1); refusals, empty responses, and errors are excluded.
+Percentages are computed over scored translations (N in Table 1); refusals, empty responses, and errors are excluded. P10 = 10th percentile chrF++ across scored translations.
 
 Even the best model (Gemini L→E) produces translations scoring ≥80 chrF++ — roughly usable quality — on only 25% of pairs. For E→L, no model exceeds 1% at this threshold. If "reliable" is operationalized as ≥60 chrF++ on a majority of pairs, no model qualifies in either direction.
 
@@ -248,7 +248,7 @@ The wide per-pair variance (σ = 22–28 chrF++ for L→E) likely reflects the d
 
 **Dictionary register.** The corpus consists of constructed conversational examples from a dictionary. Performance on narrative text (e.g., the Ella Deloria *Dakota Texts* corpus) or spontaneous speech may differ.
 
-**Decoding confound.** The baseline→thinking comparison reflects a bundled change from deterministic decoding to maximum supported reasoning settings. For Claude, enabling thinking fixes temperature at 1; for GPT-5.2, higher-reasoning configurations do not support sampling parameters such as temperature. The baseline→thinking deltas should not be interpreted as a clean ablation of temperature or thinking in isolation.
+**Decoding confound.** The baseline→thinking comparison reflects a bundled change from near-deterministic decoding to maximum supported reasoning settings. For Claude, enabling thinking fixes temperature at 1; for GPT-5.2, higher-reasoning configurations do not support sampling parameters such as temperature. The baseline→thinking deltas should not be interpreted as a clean ablation of temperature or thinking in isolation.
 
 **No human evaluation.** chrF++ is a character-overlap metric. It does not measure fluency, cultural appropriateness, or communicative success. A translation scoring 40 chrF++ might convey the correct meaning through different phrasing, or might score 40 while being misleading.
 
