@@ -1,0 +1,17 @@
+model,direction,mode,n_translations,n_refusals,n_empties,n_errors,chrf_mean,chrf_median,chrf_stdev,bleu_mean,conf_mean
+Gemini 3.1 Pro,L→E,baseline,197,1,2,0,58.4,57.4,28.5,43.0,0.87
+Gemini 3.1 Pro,E→L,baseline,199,1,0,0,40.4,35.0,21.7,24.7,0.74
+Gemini 3.1 Pro,L→E,thinking,199,1,0,0,59.4,56.8,27.6,43.5,0.93
+Gemini 3.1 Pro,E→L,thinking,199,0,1,0,42.6,38.9,22.1,24.7,0.83
+Claude Opus 4.6,L→E,baseline,200,0,0,0,45.0,39.4,24.9,27.3,0.63
+Claude Opus 4.6,E→L,baseline,200,0,0,0,27.4,24.5,14.7,15.7,0.41
+Claude Opus 4.6,L→E,thinking,200,0,0,0,45.9,43.5,25.0,27.2,0.71
+Claude Opus 4.6,E→L,thinking,200,0,0,0,34.3,31.8,16.0,18.8,0.46
+Claude Sonnet 4.6,L→E,baseline,200,0,0,0,45.4,40.9,26.2,27.5,0.69
+Claude Sonnet 4.6,E→L,baseline,187,12,1,0,24.8,23.0,11.0,13.8,0.30
+Claude Sonnet 4.6,L→E,thinking,189,0,11,0,46.1,44.3,25.9,28.1,0.70
+Claude Sonnet 4.6,E→L,thinking,196,2,2,0,27.0,24.2,13.2,15.7,0.32
+GPT-5.2,L→E,baseline,200,0,0,0,26.4,19.6,20.0,13.0,0.60
+GPT-5.2,E→L,baseline,196,4,0,0,18.3,16.9,7.4,8.6,0.32
+GPT-5.2,L→E,thinking,194,6,0,0,30.0,21.4,21.8,15.4,0.55
+GPT-5.2,E→L,thinking,184,16,0,0,23.6,20.5,12.5,14.3,0.45
