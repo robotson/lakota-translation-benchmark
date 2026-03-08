@@ -151,6 +151,21 @@ Standard deviations are large — 22–28 points for L→E and 13–22 points fo
 
 Percentages are computed over scored translations (N in Table 1); refusals, empty responses, and errors are excluded. P10 = 10th percentile chrF++ across scored translations.
 
+**Table 1c. Mean chrF++ by conversational score (thinking condition)**
+
+| Model | Dir | Score 4 | Score 5 | Score 6 |
+|-------|-----|---------|---------|---------|
+| Gemini 3.1 Pro | L→E | 52.7 | 58.2 | 81.9 |
+| Claude Opus 4.6 | L→E | 41.6 | 41.0 | 65.6 |
+| Claude Sonnet 4.6 | L→E | 40.3 | 45.1 | 64.1 |
+| GPT-5.2 | L→E | 27.9 | 23.7 | 45.7 |
+| Gemini 3.1 Pro | E→L | 37.1 | 42.7 | 61.3 |
+| Claude Opus 4.6 | E→L | 31.2 | 32.7 | 45.6 |
+| Claude Sonnet 4.6 | E→L | 24.7 | 26.2 | 35.2 |
+| GPT-5.2 | E→L | 22.2 | 21.5 | 30.4 |
+
+Sample sizes: score 4 (n≈113), score 5 (n≈46), score 6 (n≈34). Scores 7–8 excluded (n=6 combined). Higher conversational scores indicate more everyday, phrasebook-like items; lower scores indicate more structurally complex sentences.
+
 Even the best model (Gemini L→E) produces translations scoring ≥80 chrF++ — roughly usable quality — on only 24% of pairs. For E→L, only Gemini exceeds 5% at this threshold. If "reliable" is operationalized as ≥60 chrF++ on a majority of pairs, no model qualifies in either direction.
 
 ### 3.2 Effect of Extended Thinking
@@ -237,7 +252,7 @@ Extended thinking provides a consistent but small improvement (1–7 chrF++ poin
 
 The diacritic normalization finding (§3.3) suggests that models have acquired some structural knowledge of Lakota morphology, likely from linguistic papers, dictionary entries, and language-learning materials present in their training data. They produce approximately correct consonant and vowel sequences but cannot reliably place the diacritical marks that distinguish, for example, *h* [h] from *ȟ* [x] or nasalized from oral vowels. This is consistent with models having seen descriptions of Lakota phonology without sufficient running text in the Standard Lakota Orthography to learn the orthographic system from distributional statistics.
 
-The wide per-pair variance (σ = 22–28 chrF++ for L→E) likely reflects the distribution of Lakota text in training data. Common phrases such as "*Mázaska luhá he?*" (Do you have any money?) score at or near 100.0 across all models, suggesting these phrases appear verbatim in training data. Culturally specific constructions involving kinship terms, complex verb morphology, or ceremonial language score near zero. Stratifying by the corpus's conversational score (§2.1) confirms this: for Gemini L→E, pairs rated most conversational (score 6–8) average 83.1 chrF++ while more formal or complex pairs (score 4) average 50.5 — a 33-point gap. The pattern holds across all models. This suggests that model performance is concentrated on high-frequency phrasebook-like items rather than reflecting general Lakota competence.
+The wide per-pair variance (σ = 22–28 chrF++ for L→E) likely reflects the distribution of Lakota text in training data. Common phrases such as "*Mázaska luhá he?*" (Do you have any money?) score at or near 100.0 across all models, suggesting these phrases appear verbatim in training data. Culturally specific constructions involving kinship terms, complex verb morphology, or ceremonial language score near zero. Stratifying by the corpus's conversational score (§2.1, Table 1c) confirms this: for Gemini L→E, the most conversational pairs (score 6) average 81.9 chrF++ while more complex pairs (score 4) average 52.7 — a 29-point gap. The pattern holds across all models and both directions. This suggests that model performance is concentrated on high-frequency phrasebook-like items rather than reflecting general Lakota competence.
 
 ## Ethics Statement
 
