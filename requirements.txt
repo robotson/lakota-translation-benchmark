@@ -1,0 +1,3 @@
+litellm>=1.60
+sacrebleu>=2.4
+python-dotenv>=1.0

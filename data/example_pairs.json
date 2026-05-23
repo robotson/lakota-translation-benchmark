@@ -1,0 +1,21 @@
+{
+  "source": "example",
+  "register": "conversational",
+  "pairs": [
+    {
+      "lakota": "Háu, tókheškhe yaúŋ he?",
+      "english": "Hello, how are you?",
+      "context": "greeting"
+    },
+    {
+      "lakota": "Philámayaye.",
+      "english": "Thank you.",
+      "context": "polite expression"
+    },
+    {
+      "lakota": "Lé mitháwačhu kiŋ héčha.",
+      "english": "This is my wife.",
+      "context": "introduction"
+    }
+  ]
+}
