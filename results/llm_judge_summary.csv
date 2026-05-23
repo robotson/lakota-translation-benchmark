@@ -7,3 +7,9 @@ sonnet_baseline,lak_to_eng,200,58,32,110,29.0,16.0,55.0
 sonnet_thinking,lak_to_eng,189,58,45,86,30.7,23.8,45.5
 gpt_baseline,lak_to_eng,200,12,14,174,6.0,7.0,87.0
 gpt_thinking,lak_to_eng,194,26,19,149,13.4,9.8,76.8
+deepseek_baseline,lak_to_eng,200,41,26,133,20.5,13.0,66.5
+deepseek_thinking,lak_to_eng,200,38,28,134,19.0,14.0,67.0
+glm_baseline,lak_to_eng,199,18,14,167,9.0,7.0,83.9
+glm_thinking,lak_to_eng,184,17,12,155,9.2,6.5,84.2
+qwen_baseline,lak_to_eng,198,14,9,175,7.1,4.5,88.4
+qwen_thinking,lak_to_eng,198,14,15,169,7.1,7.6,85.4

@@ -5,9 +5,32 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{fontspec}
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+% Body in Charis SIL: free Unicode font designed by SIL for IPA and
+% extended-Latin diacritics; standard in descriptive-linguistics typesetting.
+% Provides precomposed glyphs for all SLO characters (ȟ, ǧ, ą, į, ų, ŋ, ʼ,
+% and stacked acute+ogonek combinations) that Times-family fonts lack.
+\setmainfont{CharisSIL}[
+  Extension={.ttf},
+  UprightFont=*-Regular,
+  ItalicFont=*-Italic,
+  BoldFont=*-Bold,
+  BoldItalicFont=*-BoldItalic]
+% TeX Gyre Heros / Cursor (Helvetica / Courier clones) for sans / mono
+% fallback: neither variant ever pairs with ȟ or ʼ in this paper, so the
+% absent glyphs in these families are not surfaced anywhere.
+\setsansfont{texgyreheros}[
+  Extension={.otf},
+  UprightFont=*-regular,
+  ItalicFont=*-italic,
+  BoldFont=*-bold,
+  BoldItalicFont=*-bolditalic]
+\setmonofont{texgyrecursor}[
+  Extension={.otf},
+  UprightFont=*-regular,
+  ItalicFont=*-italic,
+  BoldFont=*-bold,
+  BoldItalicFont=*-bolditalic,
+  Scale=0.85]
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor={rgb:red,0;green,0;blue,0.6},urlcolor={rgb:red,0;green,0;blue,0.6},citecolor={rgb:red,0;green,0;blue,0.6}}
 
@@ -23,44 +46,44 @@
 \maketitle
 
 \begin{abstract}
-We evaluate four frontier large language models on bidirectional Lakota--English translation using 200 sentence pairs from the New Lakota Dictionary. Two experimental conditions are compared: a baseline with near-deterministic decoding and no extended thinking, and a second condition with extended thinking enabled at maximum provider settings. The best model (Gemini 3.1 Pro) achieves a mean chrF++ of 59.4 on Lakota\textrightarrow English and 42.6 on English\textrightarrow Lakota. Extended thinking improves scores by 1--7 chrF++ points. No model produces reliable translation in either direction. An LLM semantic judge applied to the Lakota\textrightarrow English direction reveals that actual semantic equivalence ranges from 6\% (GPT-5.2) to 60\% (Gemini), diverging substantially from chrF++ scores. Diacritic normalization analysis shows models produce roughly correct base characters but place diacritical marks inconsistently. All results and evaluation code are publicly available at \url{https://github.com/robotson/lakota-translation-benchmark}.
+We evaluate seven large language models---four proprietary and three open-weight---on bidirectional Lakota--English translation using 200 sentence pairs from the New Lakota Dictionary. Each model is evaluated with and without extended reasoning, where the provider's API permits. The best model (Gemini 3.1 Pro) achieves a mean chrF++ of 59.4 on Lakota\textrightarrow English and 42.6 on English\textrightarrow Lakota; the strongest open-weight model trails the proprietary leaders, and no model produces reliable translation in either direction. Two independent LLM judges from different model families agree substantially (Cohen's $\kappa=0.75$) that semantic equivalence ranges from 6\% (GPT-5.2) to 60\% (Gemini), diverging substantially from chrF++ scores. For the open-weight models, enabling reasoning changes refusal behavior far more than translation quality: it surfaces the limitation rather than overcoming it. Diacritic-normalization analysis shows models produce roughly correct base characters but place diacritical marks inconsistently. All results and evaluation code are publicly available at \url{https://github.com/robotson/lakota-translation-benchmark}.
 \end{abstract}
 
 \section{Introduction}
 
-Lakota (\lak{Lakȟótiyapi}) is a Siouan language spoken primarily on reservations in North and South Dakota. UNESCO classifies it as critically endangered \cite{moseley}, with fewer than 2,000 first-language speakers, most over 65 years of age. Language revitalization efforts are ongoing across multiple tribal and academic institutions. The Lakota Language Consortium (LLC) publishes the New Lakota Dictionary (NLD) and associated pedagogical materials; the NLD serves as the source for this study's evaluation corpus.
+Lakota (\lak{Lakȟótiyapi}) is a Siouan language spoken primarily on reservations in North and South Dakota. UNESCO classifies it as critically endangered \cite{moseley}, with fewer than 2,000 first-language speakers, most over 65 years of age. Language revitalization efforts are ongoing across multiple tribal and academic institutions. The Lakota Language Consortium (LLC) publishes the New Lakota Dictionary (NLD) and associated pedagogical materials; the NLD serves as the source for this study's evaluation set.
 
 Contemporary large language models (LLMs) support translation across dozens of languages, but the extent of training data for any given language is not disclosed. Users may reasonably expect similar quality across supported languages. For critically endangered languages like Lakota---where digitized text is scarce and no large-scale parallel corpus exists---this expectation is untestable without direct evaluation.
 
-This paper reports the results of a direct evaluation. We tested four frontier LLMs on 200 Lakota--English sentence pairs in both translation directions, under two experimental conditions designed to test the impact of extended thinking (chain-of-thought reasoning) on translation quality. We report chrF++ and BLEU scores, diacritic normalization analysis, model self-reported confidence, and refusal behavior. Related work on LLM translation of low-resource languages includes the MTOB benchmark \cite{mtob}, which evaluated frontier LLMs on Kalamang translation using in-context learning from reference grammars, and the AmericasNLP shared tasks \cite{americasnlp2021,americasnlp2023}, which benchmark MT systems on indigenous American languages but do not include Lakota. The only prior Lakota-specific language model is LakotaBERT \cite{lakotabert}, a RoBERTa-based model trained for masked language modeling. To our knowledge, no prior study has evaluated zero-shot frontier LLM translation quality for Lakota.
+This paper reports the results of a direct evaluation. We tested seven LLMs---four proprietary and three open-weight---on 200 Lakota--English sentence pairs in both translation directions, under two experimental conditions designed to test the impact of extended thinking (chain-of-thought reasoning) on translation quality. We report chrF++ and BLEU scores, diacritic normalization analysis, model self-reported confidence, and refusal behavior. Related work on LLM translation of low-resource languages includes the MTOB benchmark \cite{mtob}, which evaluated frontier LLMs on Kalamang translation using in-context learning from a reference grammar, and the AmericasNLP shared tasks \cite{americasnlp2021,americasnlp2023}, which benchmark MT systems on indigenous American languages but do not include Lakota. The only prior Lakota-specific language model is LakotaBERT \cite{lakotabert}, a RoBERTa-based model trained for masked language modeling. To our knowledge, no prior study has evaluated zero-shot frontier LLM translation quality for Lakota.
 
 Lakota presents specific challenges for LLM translation. It is polysynthetic, with extensive verbal morphology including person marking, aspect, mood, and evidentiality encoded through affixes and enclitics. The Standard Lakota Orthography (SLO) uses Latin script with diacritical marks: caron-marked consonants (č, š, ž, ǧ, ȟ), ogoneks on vowels for nasalization (ą, į, ų), acute accent for stress, and the glottal stop marker (ʼ). The velar nasal is written with a separate character, ŋ. These diacritical marks distinguish phonemes---for example, \textit{h} and \textit{ȟ} represent different consonants---making them significant for both translation accuracy and character-level evaluation metrics.
 
 \section{Methodology}
 
-\subsection{Evaluation Corpus}
+\subsection{Evaluation Set}
 
-The corpus consists of 200 sentence pairs sourced from published Lakota learning materials for research purposes. Pairs were drawn from conversational examples in the New Lakota Dictionary (NLD) \cite{nld}, published by the Lakota Language Consortium (LLC), and selected from entries appearing under dictionary headwords. The first author filtered pairs for naturalness and conversational relevance. Each pair contains one Lakota sentence and one English translation. Examples range from simple greetings (\lak{Tókheškhe yaúŋ he?} / ``How are you?'') to multi-clause sentences with cultural context (\lak{Wóčhičhiyakiŋ kte héčhiŋ.} / ``I want to talk to you.''). The corpus is conversational register throughout.
+The evaluation set consists of 200 sentence pairs sourced from published Lakota learning materials for research purposes. Pairs were drawn from conversational examples in the New Lakota Dictionary (NLD) \cite{nld}, published by the Lakota Language Consortium (LLC), and selected from entries appearing under dictionary headwords. The first author filtered pairs for naturalness and conversational relevance. Each pair contains one Lakota sentence and one English translation. Examples range from short questions (\lak{Hé yačhíŋ he?} / ``Do you want it?'') to multi-clause sentences with cultural context (\lak{Wóčhičiyakiŋ kte ȟčiŋ.} / ``I want to talk to you.''). The evaluation set is conversational register throughout.
 
 The NLD uses the Standard Lakota Orthography (SLO), developed by the LLC. Multiple orthographic conventions have been in use across Lakota language communities, including the Buechel missionary system and the orthography used at Sinte Gleska University \cite{whitehat}. Standardization of Lakota orthography remains a contested issue within Lakota communities \cite{hauff}. Our use of NLD materials was practical---it is the most accessible published collection of Lakota sentence pairs with English translations available to us---and should not be read as an endorsement of any particular orthographic standard or institutional approach to language documentation.
 
-Each pair includes a conversational score (4--8) assigned during curation, where higher values indicate more everyday, conversational language and lower values indicate more formal or structurally complex sentences. The corpus also records the headword context from which each pair was drawn. The same 200 pairs were used for all models and both experimental conditions.
+Each pair includes a conversational score (4--8) assigned during curation, where higher values indicate more everyday, conversational language and lower values indicate more formal or structurally complex sentences. The evaluation set also records the headword context from which each pair was drawn. The same 200 pairs were used for all models and both experimental conditions.
 
 \subsection{Models}
 
-Four frontier models from three providers were evaluated: Gemini 3.1 Pro Preview (Google), Claude Opus 4.6 (Anthropic), Claude Sonnet 4.6 (Anthropic), and GPT-5.2 (OpenAI). All models were accessed through litellm (v1.63), a unified API wrapper, to minimize implementation variance across providers. Selection criteria: frontier-tier models from major providers, all supporting structured JSON output with schema enforcement.
+Seven models were evaluated. Four are proprietary frontier models from three providers: Gemini 3.1 Pro Preview (Google), Claude Opus 4.6 (Anthropic), Claude Sonnet 4.6 (Anthropic), and GPT-5.2 (OpenAI). Three are open-weight frontier models, accessed through Together AI: DeepSeek-V4-Pro, Qwen3.6-Plus, and GLM-5.1. All models were accessed through litellm (v1.63), a unified API wrapper; the open-weight models were routed through an OpenAI-compatible endpoint to preserve the same structured-output contract. Selection criteria: frontier-tier models supporting structured JSON output with schema enforcement. Including open-weight models tests whether the closed--open capability gap observed on higher-resource tasks holds for Lakota.
 
 \subsection{Experimental Conditions}
 
-Two conditions were run on the same corpus:
+Two conditions were run on the same evaluation set:
 
 \textbf{Baseline:} Temperature 0, no extended thinking. Maximum output tokens: 1,024. This condition uses near-deterministic decoding and represents baseline model capability.
 
 \textbf{Thinking:} Extended thinking enabled at maximum provider settings. Maximum output tokens: 16,384 (to accommodate thinking token overhead). Claude models used \texttt{thinking.budget\_tokens} = 8,192; GPT-5.2 used \texttt{reasoning\_effort} = high; Gemini used \texttt{thinkingLevel} = high.
 
-A caveat applies to Gemini: thinking is enabled by default on Gemini 3.1 Pro and cannot be disabled. The baseline condition therefore already included default-level thinking for Gemini. The baseline\textrightarrow thinking comparison for Gemini isolates only the effect of increasing thinking from default to high, not of enabling thinking.
+Gemini 3.1 Pro enables thinking by default and cannot disable it, so its baseline already includes default-level thinking; the baseline\textrightarrow thinking comparison isolates only the increase from default to high, not the enabling of thinking.
 
-For Claude models, enabling extended thinking fixes decoding at temperature 1 (temperature cannot be set independently while thinking is enabled). For GPT-5.2, higher-reasoning configurations do not support sampling parameters such as temperature; although the thinking runs completed, the API client likely ignored the \texttt{temperature=1} parameter when \texttt{reasoning\_effort} was set to \texttt{high}. Accordingly, baseline\textrightarrow thinking comparisons should be interpreted as ``baseline vs.\ maximum supported reasoning settings'' rather than a clean temperature-controlled ablation.
+For Claude models, enabling thinking fixes temperature at 1 (it cannot be set independently while thinking is on); for GPT-5.2, high-reasoning configurations ignore sampling parameters, so \texttt{temperature=1} likely had no effect. These proprietary baseline\textrightarrow thinking comparisons should therefore be read as ``baseline vs.\ maximum supported reasoning settings'' rather than clean temperature-controlled ablations. The three open-weight models (served via Together AI) instead toggle reasoning directly: thinking uses the provider's default reasoning and baseline disables it via the documented control---\texttt{reasoning.enabled} for DeepSeek, \texttt{chat\_template\_kwargs.enable\_thinking} for Qwen and GLM---holding each model's output-format regime fixed, a cleaner within-model ablation.
 
 \subsection{Structured Output Schema}
 
@@ -75,22 +98,49 @@ You are a translation system. Translate the input text. Respond as JSON with thr
 \noindent User prompts followed the format ``Translate from Lakota to English: \{text\}'' and ``Translate from English to Lakota: \{text\}'' for the two directions.
 
 \subsection{Metrics}
+\label{sec:metrics}
 
-\textbf{chrF++} (character n-gram F-score) was the primary metric, computed via SacreBLEU \cite{chrf} with default parameters: character n-gram order 6, word n-gram order 2, $\beta = 2$. chrF++ is preferred over BLEU for morphologically rich languages because it operates at the character level and does not penalize valid morphological variants as harshly as word-level metrics. \textbf{BLEU} was computed as a secondary metric for comparability.
+\textbf{chrF++} (a character n-gram F-score extended with word n-grams) was the primary metric, computed via SacreBLEU \cite{chrf,chrfpp} with default parameters: character n-gram order 6, word n-gram order 2, $\beta = 2$. chrF++ is preferred over BLEU for morphologically rich languages because it operates at the character level and does not penalize valid morphological variants as harshly as word-level metrics. \textbf{BLEU} was computed as a secondary metric for comparability.
 
 \textbf{Diacritic-normalized chrF++} was computed for English\textrightarrow Lakota translations by stripping Unicode combining marks (categories Mn and Mc) from both candidate and reference via NFD decomposition before scoring. NFD decomposition ensures canonical equivalence between precomposed characters (e.g., U+01CE, ǎ) and combining sequences (e.g., a + U+030C) before mark removal. This normalization removes carons, ogoneks, and stress marks in SLO; the character ŋ (eng) and the glottal stop marker (ʼ) are unaffected. The delta between raw and normalized chrF++ isolates orthographic variation attributable to these diacritical marks from broader lexical and morphological differences.
 
-\textbf{LLM semantic judgment} was used to evaluate Lakota\textrightarrow English translations, where chrF++ is known to penalize valid paraphrases against single references. We initially ran BERTScore \cite{bertscore} (roberta-large) to capture semantic matches that chrF++ misses, but it was uninformative: F1 ranged from 0.906 to 0.959 across all models regardless of actual translation quality. At the pair level, GPT-5.2's translation of ``Do you have a car?'' as ``Do you have a horse?'' received BERTScore 0.975. We instead used a separate LLM (Gemini 3 Flash Preview) to judge whether each hypothesis--reference pair conveys the same meaning, following the GEMBA framework \cite{gemba} but simplified to English-to-English semantic equivalence. Because both strings are English, the judge requires no knowledge of Lakota---it evaluates only whether the model's English output preserves the meaning of the English reference. Each pair was rated \texttt{equivalent}, \texttt{partially\_equivalent}, or \texttt{not\_equivalent}. All Lakota\textrightarrow English translation attempts across 8 model$\times$condition combinations were judged.
+\textbf{LLM semantic judgment} was used to evaluate Lakota\textrightarrow English translations, where chrF++ is known to penalize valid paraphrases against single references. We initially ran BERTScore \cite{bertscore} (roberta-large) on the proprietary models to capture semantic matches that chrF++ misses, but it was uninformative: F1 ranged from 0.906 to 0.959 regardless of actual translation quality. At the pair level, GPT-5.2's translation of ``Do you have a car?'' as ``Do you have a horse?'' received BERTScore 0.975. We did not extend the BERTScore pass to the open-weight models added later, having moved to LLM-based semantic judgment as our primary check. We instead used a separate LLM (Gemini 3 Flash Preview) to judge whether each hypothesis--reference pair conveys the same meaning, following the GEMBA framework \cite{gemba} but simplified to English-to-English semantic equivalence. Because both strings are English, the judge requires no knowledge of Lakota---it evaluates only whether the model's English output preserves the meaning of the English reference. Each pair was rated \texttt{equivalent}, \texttt{partially\_equivalent}, or \texttt{not\_equivalent}. All Lakota\textrightarrow English translation attempts across 14 model$\times$condition combinations were judged. To check for family-level self-judging bias, every pair was also judged by Llama-3.3-70B-Instruct-Turbo, an open-weight model from a developer not among those evaluated; agreement is reported in \S\ref{sec:semantic}.
 
 \textbf{Self-reported confidence} (0.0--1.0) was extracted from the structured output.
 
 \subsection{Variance}
 
-A pilot study was conducted before the full thinking evaluation to assess run-to-run variance under the thinking condition's decoding settings. Twenty sentence pairs were sampled and each model was run 3 times on both directions (480 API calls). Cross-run standard deviation ranged from 2.6 (Opus L\textrightarrow E) to 5.8 (GPT-5.2 E\textrightarrow L). Model rankings were stable across all three runs (Appendix~\ref{app:pilot}). Based on these results, the full evaluation was conducted as a single run per condition.
+A pilot study was conducted before the full thinking evaluation to assess run-to-run variance under the thinking condition's decoding settings. Twenty sentence pairs were sampled and each of the four proprietary models was run 3 times on both directions (480 API calls). Cross-run standard deviation ranged from 2.6 (Opus L\textrightarrow E) to 5.8 (GPT-5.2 E\textrightarrow L). Model rankings were stable across all three runs (Table~\ref{tab:pilot}). Based on these results, the full evaluation was conducted as a single run per condition.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Model} & \textbf{L\textrightarrow E} & \textbf{E\textrightarrow L} \\
+ & \textbf{chrF++ ($\sigma$)} & \textbf{chrF++ ($\sigma$)} \\
+\midrule
+Gemini 3.1 Pro & 63.1 (3.3) & 33.6 (3.4) \\
+Claude Opus 4.6 & 45.1 (2.6) & 29.8 (4.8) \\
+Claude Sonnet 4.6 & 42.7 (4.8) & 20.8 (4.6) \\
+GPT-5.2 & 25.5 (5.7) & 15.9 (5.8) \\
+\bottomrule
+\end{tabular}
+\caption{Pilot variance: mean chrF++ and cross-run standard deviation across 3 runs (20 pairs), four proprietary models (February 2026). The open-weight models, added in May 2026, were not separately re-piloted.}
+\label{tab:pilot}
+\end{table}
+
+\subsection{Data Contamination}
+\label{sec:contamination}
+
+A central concern with LLM-based evaluation on low-resource pairs is that the evaluation set may appear in pretraining data. The evaluation set here is drawn from the New Lakota Dictionary \cite{nld}, whose contents are findable on the open web in OCR'd reproductions of varying quality; any web-scale training corpus could plausibly include some form of this material.
+
+To bound the empirical risk we searched indexed open-web content for all 200 pairs. The Lakota source string appears verbatim for about 10\% of pairs, but the Lakota sentence and its English reference \emph{together} for only 0.5\%---almost always in scanned copies of the dictionary itself. This distinction matters: controlled studies find that aligned source--target overlap can substantially inflate translation scores, while source- or target-only overlap produces smaller, less consistent inflation, at the 1B--8B scales tested \cite{kocyigit2025}. The overlap we observe is almost all the one-sided kind.
+
+The score distribution points the same way: a memorized test set would cluster near ceiling, whereas ours ranges widely (6--61\% semantic equivalence across the seven models), consistent with genuine partial capability rather than wholesale recall---though, as \S4 notes, the most common phrases are likely memorized.
 
 \subsection{Procedure}
 
-Each evaluation run called the model API once per (pair, direction) combination: 200 pairs $\times$ 2 directions = 400 calls per model, 1,600 calls per condition. A 1.5-second delay was inserted between calls. API timeout was set to 60 seconds for baseline and 180 seconds for thinking. Failed calls were retried up to 3 times with exponential backoff. All evaluations were conducted in February--March 2026. Results were written to per-model JSONL files with per-pair metadata.
+Each evaluation run called the model API once per (pair, direction) combination: 200 pairs $\times$ 2 directions = 400 calls per model, 1,600 calls per condition. A 1.5-second delay was inserted between calls. API timeout was set to 60 seconds for baseline and 180 seconds for thinking. Failed calls were retried up to 3 times with exponential backoff. Proprietary models were evaluated in February--March 2026 and open-weight models in May 2026; exact model identifiers (API versions current on those dates) are listed in the released code. Results were written to per-model JSONL files with per-pair metadata.
 
 \section{Results}
 
@@ -100,8 +150,6 @@ Table~\ref{tab:quality} reports the best-condition results for each model. For G
 
 \begin{table*}[t]
 \centering\small
-\caption{Translation quality by model and direction (best condition). N $<$ 200 reflects refusals, empty responses, or API errors excluded from scoring (\S3.5). $\sigma$ is across sentence pairs, not across runs.}
-\label{tab:quality}
 \begin{tabular}{@{}llrrrrr@{}}
 \toprule
 \textbf{Model} & \textbf{Dir} & \textbf{N} & \textbf{chrF++} & \textbf{$\sigma$ (pairs)} & \textbf{Median} & \textbf{BLEU} \\
@@ -110,23 +158,29 @@ Gemini 3.1 Pro & L\textrightarrow E & 199 & \textbf{59.4} & 27.6 & 56.8 & 43.5 \
 Claude Opus 4.6 & L\textrightarrow E & 200 & 45.9 & 25.0 & 43.5 & 27.2 \\
 Claude Sonnet 4.6 & L\textrightarrow E & 189 & 46.1 & 25.9 & 44.3 & 28.1 \\
 GPT-5.2 & L\textrightarrow E & 194 & 30.0 & 21.8 & 21.4 & 15.4 \\
+DeepSeek-V4-Pro & L\textrightarrow E & 200 & 38.0 & 26.0 & 30.9 & 23.3 \\
+GLM-5.1 & L\textrightarrow E & 184 & 29.3 & 18.8 & 24.5 & 14.2 \\
+Qwen3.6-Plus & L\textrightarrow E & 198 & 26.1 & 21.9 & 18.2 & 14.4 \\
 \midrule
 Gemini 3.1 Pro & E\textrightarrow L & 199 & \textbf{42.6} & 22.1 & 38.9 & 24.7 \\
 Claude Opus 4.6 & E\textrightarrow L & 200 & 34.3 & 16.0 & 31.8 & 18.8 \\
 Claude Sonnet 4.6 & E\textrightarrow L & 196 & 27.0 & 13.2 & 24.2 & 15.7 \\
 GPT-5.2 & E\textrightarrow L & 184 & 23.6 & 12.5 & 20.5 & 14.3 \\
+DeepSeek-V4-Pro & E\textrightarrow L & 195 & 29.2 & 14.7 & 26.9 & 17.0 \\
+GLM-5.1 & E\textrightarrow L & 193 & 14.6 & 7.2 & 12.8 & 9.3 \\
+Qwen3.6-Plus & E\textrightarrow L & 164 & 18.4 & 8.7 & 17.2 & 13.3 \\
 \bottomrule
 \end{tabular}
+\caption{Translation quality by model and direction. Proprietary models are shown in their best condition; open-weight models (DeepSeek, GLM, Qwen) in their reasoning-enabled condition. N $<$ 200 reflects refusals, empty responses, or API errors excluded from scoring (\S\ref{sec:refusals}). $\sigma$ is across sentence pairs, not across runs.}
+\label{tab:quality}
 \end{table*}
 
-Gemini leads in both directions. Opus and Sonnet score within 2 chrF++ points of each other on L\textrightarrow E (Sonnet slightly ahead), but Opus leads Sonnet by 7 points on E\textrightarrow L. GPT-5.2 trails in both directions. Every model scores substantially higher on Lakota\textrightarrow English than English\textrightarrow Lakota. The gap ranges from 6.4 points (GPT-5.2) to 19.1 points (Sonnet). This asymmetry is consistent across all models: Lakota\textrightarrow English (producing English from Lakota input) scores higher than English\textrightarrow Lakota (producing Lakota from English input) for every model.
+Gemini leads in both directions. Opus and Sonnet score within 2 chrF++ points of each other on L\textrightarrow E (Sonnet slightly ahead), but Opus leads Sonnet by 7 points on E\textrightarrow L. GPT-5.2 trails the proprietary models in both directions. Among the open-weight models, DeepSeek-V4-Pro is strongest (38.0 / 29.2 chrF++), placing between GPT-5.2 and the Claude models, while GLM-5.1 and Qwen3.6-Plus score at or below GPT-5.2; no open-weight model approaches Gemini. Every model scores substantially higher on Lakota\textrightarrow English than English\textrightarrow Lakota. The gap ranges from 6.4 points (GPT-5.2) to 19.1 points (Sonnet). This asymmetry is consistent across all models: Lakota\textrightarrow English (producing English from Lakota input) scores higher than English\textrightarrow Lakota (producing Lakota from English input) for every model.
 
 Standard deviations are large---22--28 points for L\textrightarrow E and 13--22 points for E\textrightarrow L---indicating that per-pair quality varies widely. Some pairs score 100.0 (exact character match to reference) while others score below 10. Table~\ref{tab:dist} reports the distribution of scores across chrF++ thresholds and tail behavior (10th percentile).
 
 \begin{table}[t]
 \centering\small
-\caption{Score distribution by chrF++ threshold (thinking condition). Percentages over scored translations; P10 = 10th percentile.}
-\label{tab:dist}
 \begin{tabular}{@{}llrrrr@{}}
 \toprule
 \textbf{Model} & \textbf{Dir} & \textbf{$\geq$80} & \textbf{$\geq$60} & \textbf{$\geq$40} & \textbf{P10} \\
@@ -135,21 +189,27 @@ Gemini & L\textrightarrow E & 24\% & 47\% & 72\% & 21.6 \\
 Opus & L\textrightarrow E & 12\% & 25\% & 56\% & 15.9 \\
 Sonnet & L\textrightarrow E & 12\% & 25\% & 55\% & 16.0 \\
 GPT-5.2 & L\textrightarrow E & 5\% & 10\% & 23\% & 10.4 \\
+DeepSeek & L\textrightarrow E & 8\% & 22\% & 36\% & 11.0 \\
+GLM & L\textrightarrow E & 3\% & 7\% & 20\% & 11.8 \\
+Qwen & L\textrightarrow E & 4\% & 10\% & 17\% & 8.2 \\
 \midrule
 Gemini & E\textrightarrow L & 7\% & 20\% & 47\% & 17.2 \\
 Opus & E\textrightarrow L & 1\% & 6\% & 29\% & 16.0 \\
 Sonnet & E\textrightarrow L & 1\% & 1\% & 15\% & 12.9 \\
 GPT-5.2 & E\textrightarrow L & 1\% & 1\% & 8\% & 12.1 \\
+DeepSeek & E\textrightarrow L & 1\% & 4\% & 21\% & 13.0 \\
+GLM & E\textrightarrow L & 0\% & 0\% & 0\% & 7.4 \\
+Qwen & E\textrightarrow L & 0\% & 0\% & 2\% & 8.9 \\
 \bottomrule
 \end{tabular}
+\caption{Score distribution by chrF++ threshold (thinking condition). Percentages over scored translations; P10 = 10th percentile.}
+\label{tab:dist}
 \end{table}
 
-Table~\ref{tab:stratified} stratifies chrF++ by the corpus's conversational score (\S2.1). For Gemini L\textrightarrow E, the most conversational pairs (score 6) average 81.9 chrF++ while more complex pairs (score 4) average 52.7---a 29-point gap. The pattern holds across all models and both directions, suggesting that performance is concentrated on high-frequency phrasebook-like items.
+Table~\ref{tab:stratified} stratifies chrF++ by the evaluation set's conversational score (\S2.1). For Gemini L\textrightarrow E, the most conversational pairs (score 6) average 81.9 chrF++ while more complex pairs (score 4) average 52.7---a 29-point gap. The pattern holds across all models and both directions, suggesting that performance is concentrated on high-frequency phrasebook-like items, consistent with the finding that low-resource LLM translation quality tracks test-set coverage \cite{aycockstap2025}.
 
 \begin{table}[t]
 \centering\small
-\caption{Mean chrF++ by conversational score (thinking condition). Score 4 = more formal/complex; score 6 = most conversational. Scores 7--8 excluded (n=6 combined).}
-\label{tab:stratified}
 \begin{tabular}{@{}llrrr@{}}
 \toprule
 \textbf{Model} & \textbf{Dir} & \textbf{Sc.\,4} & \textbf{Sc.\,5} & \textbf{Sc.\,6} \\
@@ -158,13 +218,21 @@ Gemini & L\textrightarrow E & 52.7 & 58.2 & 81.9 \\
 Opus & L\textrightarrow E & 41.6 & 41.0 & 65.6 \\
 Sonnet & L\textrightarrow E & 40.3 & 45.1 & 64.1 \\
 GPT-5.2 & L\textrightarrow E & 27.9 & 23.7 & 45.7 \\
+DeepSeek & L\textrightarrow E & 33.0 & 33.9 & 59.6 \\
+GLM & L\textrightarrow E & 27.3 & 26.0 & 41.0 \\
+Qwen & L\textrightarrow E & 23.3 & 22.1 & 41.7 \\
 \midrule
 Gemini & E\textrightarrow L & 37.1 & 42.7 & 61.3 \\
 Opus & E\textrightarrow L & 31.2 & 32.7 & 45.6 \\
 Sonnet & E\textrightarrow L & 24.7 & 26.2 & 35.2 \\
 GPT-5.2 & E\textrightarrow L & 22.2 & 21.5 & 30.4 \\
+DeepSeek & E\textrightarrow L & 29.4 & 26.3 & 31.0 \\
+GLM & E\textrightarrow L & 13.0 & 16.5 & 16.3 \\
+Qwen & E\textrightarrow L & 17.3 & 17.3 & 21.9 \\
 \bottomrule
 \end{tabular}
+\caption{Mean chrF++ by conversational score (thinking condition). Score 4 = more formal/complex; score 6 = most conversational. Scores 7--8 excluded (n=6 combined).}
+\label{tab:stratified}
 \end{table}
 
 Even the best model (Gemini L\textrightarrow E) produces translations scoring $\geq$80 chrF++---roughly usable quality---on only 24\% of pairs. For E\textrightarrow L, only Gemini exceeds 5\% at this threshold. If ``reliable'' is operationalized as $\geq$60 chrF++ on a majority of pairs, no model qualifies in either direction.
@@ -176,8 +244,6 @@ Table~\ref{tab:thinking} compares baseline (near-deterministic decoding, no exte
 
 \begin{table}[t]
 \centering\small
-\caption{Baseline\textrightarrow thinking comparison}
-\label{tab:thinking}
 \begin{tabular}{@{}llrrr@{}}
 \toprule
 \textbf{Model} & \textbf{Dir} & \textbf{Base} & \textbf{Think} & \textbf{$\Delta$} \\
@@ -190,13 +256,20 @@ GPT-5.2 & L\textrightarrow E & 26.4 & 30.0 & +3.6 \\
 GPT-5.2 & E\textrightarrow L & 18.3 & 23.6 & +5.3 \\
 Gemini & L\textrightarrow E & 58.4 & 59.4 & +1.0 \\
 Gemini & E\textrightarrow L & 40.4 & 42.6 & +2.2 \\
+\midrule
+DeepSeek & L\textrightarrow E & 40.1 & 38.0 & $-$2.1 \\
+DeepSeek & E\textrightarrow L & 26.4 & 29.2 & +2.8 \\
+GLM & L\textrightarrow E & 27.8 & 29.3 & +1.5 \\
+GLM & E\textrightarrow L & 13.6 & 14.6 & +1.0 \\
+Qwen & L\textrightarrow E & 25.2 & 26.1 & +0.9 \\
+Qwen & E\textrightarrow L & 15.6 & 18.4 & +2.8 \\
 \bottomrule
 \end{tabular}
+\caption{Baseline\textrightarrow thinking comparison}
+\label{tab:thinking}
 \end{table}
 
-Thinking improved chrF++ across all model-direction pairs, with E\textrightarrow L gains (2.2--6.9 points, 5--29\% relative) consistently larger than L\textrightarrow E gains (0.7--3.6 points, 2--14\% relative). On L\textrightarrow E, three models showed only marginal improvement---Sonnet +0.7, Opus +0.9, Gemini +1.0---all within the variance measured in the pilot study. GPT-5.2 showed a larger L\textrightarrow E gain of +3.6. For Gemini, the small L\textrightarrow E delta is consistent with the fact that Gemini's baseline already included default-level thinking. Gemini's E\textrightarrow L delta (+2.2) suggests that even with default thinking already active, the higher reasoning setting provides some benefit on the harder generation task.
-
-The improvement is larger on E\textrightarrow L than L\textrightarrow E for all models, suggesting that reasoning overhead is more useful for generation (English\textrightarrow Lakota) than for the reverse direction.
+Among proprietary models, thinking improved chrF++ across all model-direction pairs, with E\textrightarrow L gains (2.2--6.9 points) consistently larger than L\textrightarrow E gains (0.7--3.6 points)---reasoning helps more on the harder generation direction. For Gemini, whose baseline already includes default-level thinking, the L\textrightarrow E delta is small (+1.0) while E\textrightarrow L still gains (+2.2). The open-weight models show only marginal chrF++ movement ($-2.1$ to $+2.8$ points); unlike the proprietary frontier, reasoning does little for their translation quality or semantic equivalence (\S\ref{sec:semantic}) and instead changes their refusal behavior (\S\ref{sec:refusals}).
 
 \subsection{Diacritic Normalization}
 
@@ -204,8 +277,6 @@ Table~\ref{tab:diacritic} reports raw and diacritic-normalized chrF++ for Englis
 
 \begin{table}[t]
 \centering\small
-\caption{Diacritic normalization, English\textrightarrow Lakota}
-\label{tab:diacritic}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
 \textbf{Model} & \textbf{Raw} & \textbf{Norm.} & \textbf{$\Delta$} \\
@@ -214,11 +285,18 @@ Gemini 3.1 Pro & 42.6 & 48.7 & +6.1 \\
 Claude Opus 4.6 & 34.3 & 40.8 & +6.5 \\
 Claude Sonnet 4.6 & 27.0 & 32.3 & +5.3 \\
 GPT-5.2 & 23.6 & 27.2 & +3.6 \\
+\midrule
+DeepSeek-V4-Pro & 29.2 & 33.6 & +4.4 \\
+GLM-5.1 & 14.6 & 18.1 & +3.5 \\
+Qwen3.6-Plus & 18.4 & 21.7 & +3.3 \\
 \bottomrule
 \end{tabular}
+\caption{Diacritic normalization, English\textrightarrow Lakota (thinking condition).}
+\label{tab:diacritic}
 \end{table}
 
-Stripping diacritics adds 3.6--6.5 chrF++ points for E\textrightarrow L. The gap indicates that models produce roughly correct consonant and vowel sequences but place diacritical marks---stress, nasalization, and caron-marked consonants---inconsistently. Multiple orthographic conventions are in active use for Lakota (\S2.1); models may have been trained on text in several of these systems, and the prompt did not specify an orthographic standard.
+
+Stripping diacritics adds 3.3--6.5 chrF++ points for E\textrightarrow L. The gap indicates that models produce roughly correct consonant and vowel sequences but place diacritical marks---stress, nasalization, and caron-marked consonants---inconsistently. Multiple orthographic conventions are in active use for Lakota (\S2.1); models may have been trained on text in several of these systems, and the prompt did not specify an orthographic standard.
 
 \subsection{Confidence}
 
@@ -226,8 +304,6 @@ Table~\ref{tab:confidence} reports mean self-reported confidence from the thinki
 
 \begin{table}[t]
 \centering\small
-\caption{Self-reported confidence (thinking condition)}
-\label{tab:confidence}
 \begin{tabular}{@{}lll@{}}
 \toprule
 \textbf{Model} & \textbf{L\textrightarrow E} & \textbf{E\textrightarrow L} \\
@@ -236,24 +312,32 @@ Gemini 3.1 Pro & 0.93 \scriptsize($\sigma$\,=\,0.06) & 0.83 \scriptsize($\sigma$
 Claude Opus 4.6 & 0.71 \scriptsize($\sigma$\,=\,0.17) & 0.46 \scriptsize($\sigma$\,=\,0.15) \\
 Claude Sonnet 4.6 & 0.70 \scriptsize($\sigma$\,=\,0.15) & 0.32 \scriptsize($\sigma$\,=\,0.11) \\
 GPT-5.2 & 0.55 \scriptsize($\sigma$\,=\,0.12) & 0.45 \scriptsize($\sigma$\,=\,0.11) \\
+\midrule
+DeepSeek-V4-Pro & 0.84 \scriptsize($\sigma$\,=\,0.10) & 0.68 \scriptsize($\sigma$\,=\,0.13) \\
+GLM-5.1 & 0.63 \scriptsize($\sigma$\,=\,0.18) & 0.56 \scriptsize($\sigma$\,=\,0.22) \\
+Qwen3.6-Plus & 0.78 \scriptsize($\sigma$\,=\,0.16) & 0.59 \scriptsize($\sigma$\,=\,0.20) \\
 \bottomrule
 \end{tabular}
+\caption{Self-reported confidence (thinking condition).}
+\label{tab:confidence}
 \end{table}
 
-The confidence ranking largely matches the chrF++ ranking for L\textrightarrow E: Gemini $>$ Opus $\approx$ Sonnet $>$ GPT-5.2. All models report lower confidence for E\textrightarrow L than L\textrightarrow E, correctly reflecting the direction's greater difficulty.
+
+Among the proprietary models, the confidence ranking largely matches the chrF++ ranking for L\textrightarrow E: Gemini $>$ Opus $\approx$ Sonnet $>$ GPT-5.2. The open-weight models are the most overconfident: DeepSeek-V4-Pro and Qwen3.6-Plus report L\textrightarrow E confidence of 0.84 and 0.78---above every proprietary model except Gemini---despite scoring well below the Claude models. All models report lower confidence for E\textrightarrow L than L\textrightarrow E.
 
 Gemini reports the highest confidence in both directions (0.93 L\textrightarrow E, 0.83 E\textrightarrow L) and also achieves the highest chrF++ scores, so its confidence is directionally accurate. However, 0.83 confidence on E\textrightarrow L where chrF++ is 42.6 represents significant overconfidence in absolute terms.
 
-GPT-5.2's E\textrightarrow L confidence (0.45) is higher than Sonnet's (0.32) despite GPT-5.2 scoring lower on actual translation quality (23.6 vs 27.0 chrF++). The confidence ranking for E\textrightarrow L does not perfectly match the quality ranking.
+GPT-5.2's E\textrightarrow L confidence (0.45) exceeds Sonnet's (0.32) despite scoring lower on chrF++ (23.6 vs 27.0), so E\textrightarrow L confidence does not track quality.
+
+At the per-pair level, confidence is a poor guide to correctness, especially for the open-weight models without reasoning: Qwen3.6-Plus renders \lak{Hamáčhola} (``I am naked'') as ``Spider'' with 0.95 confidence, and the three open-weight models return three different confident answers (0.8--0.95) for \lak{Wakȟálya yo} (``Make coffee''). High confidence attached to output that does not preserve meaning is common rather than exceptional, so self-reported confidence cannot be used to filter unreliable translations.
 
 \subsection{Refusals and Failures}
+\label{sec:refusals}
 
 Table~\ref{tab:refusals} reports non-translation outcomes from the thinking condition.
 
 \begin{table}[t]
 \centering\small
-\caption{Non-translation outcomes (thinking condition). Ref = refusal, Emp = empty response, Err = API error.}
-\label{tab:refusals}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
  & \multicolumn{2}{c}{\textbf{L\textrightarrow E}} & \multicolumn{2}{c}{\textbf{E\textrightarrow L}} \\
@@ -264,70 +348,121 @@ GPT-5.2 & 6 & 0 & 16 & 0 \\
 Sonnet 4.6 & 0 & 11 & 2 & 2 \\
 Opus 4.6 & 0 & 0 & 0 & 0 \\
 Gemini & 1 & 0 & 0 & 1 \\
+\midrule
+DeepSeek-V4-Pro & 0 & 0 & 5 & 0 \\
+GLM-5.1 & 16 & 0 & 7 & 0 \\
+Qwen3.6-Plus & 2 & 0 & 36 & 0 \\
 \bottomrule
 \end{tabular}
+\caption{Non-translation outcomes (thinking condition). Ref = refusal, Emp = empty response, Err = API error.}
+\label{tab:refusals}
 \end{table}
 
-GPT-5.2 refused the most translations overall (22 total, 16 on E\textrightarrow L). Refusal reasons typically cited inability to produce reliable Lakota text. Sonnet produced 11 empty responses on L\textrightarrow E (the model returned an empty translation string with no refusal reason) and refused 2 E\textrightarrow L translations. Opus produced complete translations on all 200 pairs in both directions. Gemini had one L\textrightarrow E refusal and one E\textrightarrow L empty response.
+Among the proprietary models, GPT-5.2 refused the most translations (22 total, 16 on E\textrightarrow L, up from 4 at baseline); among the open-weight models, Qwen3.6-Plus refused far more (38 total, 36 on E\textrightarrow L). Refusal reasons typically cited inability to produce reliable Lakota text. Sonnet produced 11 empty responses on L\textrightarrow E (the model returned an empty translation string with no refusal reason) and refused 2 E\textrightarrow L translations. Opus produced complete translations on all 200 pairs in both directions. Gemini had one L\textrightarrow E refusal and one E\textrightarrow L empty response.
 
-Refusals are concentrated on E\textrightarrow L (16 of 22 GPT refusals, both Sonnet refusals), consistent with models being less willing to generate in a language they have limited training data for.
+The open-weight models make the role of reasoning in refusal behavior especially clear. With reasoning enabled, Qwen3.6-Plus refuses 36 of 200 E\textrightarrow L pairs and GLM-5.1 refuses 16 of 200 L\textrightarrow E pairs; with reasoning disabled, these fall to 0 and 1 respectively. Disabling reasoning does not improve translation quality (\S\ref{sec:thinking}, \S\ref{sec:semantic})---it removes the step at which the model recognizes it cannot translate. For these models, reasoning surfaces the limitation rather than overcoming it.
 
-Non-translation outcomes shifted between conditions. At baseline, Sonnet refused 12 E\textrightarrow L translations and GPT-5.2 refused 4; with thinking enabled, GPT-5.2's refusals increased to 22 while Sonnet's refusals decreased to 2 but empty responses appeared (11 L\textrightarrow E, 2 E\textrightarrow L). Opus produced complete translations under both conditions. Refusal patterns depend on experimental setup---temperature, thinking overhead, or both---not only on model capability.
+The structured schema lets each model decline with a \texttt{refusal\_reason}, which could bias models toward refusal over a low-confidence attempt. The non-thinking results argue against this: disabling reasoning makes refusals nearly vanish with no gain in semantic equivalence, so refusals under reasoning track recognized difficulty rather than a prompt artifact.
+
+Among the proprietary models, refusals are concentrated on E\textrightarrow L (16 of 22 GPT refusals, both Sonnet refusals)---the harder generation direction.
+
+Reported scores exclude refusals, the standard conditional-on-attempting convention. Scoring refusals as chrF++ = 0 over all 200 pairs lowers the high-refusal cases (Qwen3.6-Plus E\textrightarrow L from 18.4 to 15.1, GLM-5.1 L\textrightarrow E from 29.3 to 27.0), with no change to the ranking. For the open-weight models it also tempers the apparent thinking gains: Qwen3.6-Plus's E\textrightarrow L thinking score no longer exceeds its baseline once reasoning-induced refusals are counted.
 
 \subsection{Semantic Equivalence}
+\label{sec:semantic}
 
-Table~\ref{tab:judge} reports LLM semantic judgments for Lakota\textrightarrow English translations under both conditions. The judge rated each hypothesis--reference pair as \texttt{equivalent}, \texttt{partially\_equivalent}, or \texttt{not\_equivalent}.
+Table~\ref{tab:judge} reports LLM semantic judgments for Lakota\textrightarrow English translations across all seven models and both conditions, rating each hypothesis--reference pair \texttt{equivalent}, \texttt{partially\_equivalent}, or \texttt{not\_equivalent}. The two judges (Gemini 3 Flash and the independent Llama-3.3-70B) agree substantially (Cohen's $\kappa$=0.75, 0.89 quadratic-weighted), with disagreement concentrated in the adjacent \texttt{partially\_equivalent} tier rather than between the polar categories.
 
 \begin{table}[t]
 \centering\small
-\caption{LLM semantic judge results, L\textrightarrow E. Equiv = semantically equivalent to reference; Partial = partially equivalent; Not = not equivalent.}
-\label{tab:judge}
-\begin{tabular}{@{}llrrr@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-\textbf{Model} & \textbf{Cond.} & \textbf{Equiv} & \textbf{Partial} & \textbf{Not} \\
+\textbf{Model} & \textbf{Cond.} & \textbf{Equiv} & \textbf{Partial} & \textbf{Not} & \boldmath$\kappa$ \\
 \midrule
-Gemini & base & 60.4\% & 23.4\% & 16.2\% \\
-Gemini & think & 61.3\% & 23.1\% & 15.6\% \\
-Opus 4.6 & base & 31.5\% & 18.0\% & 50.5\% \\
-Opus 4.6 & think & 37.0\% & 21.0\% & 42.0\% \\
-Sonnet 4.6 & base & 29.0\% & 16.0\% & 55.0\% \\
-Sonnet 4.6 & think & 30.7\% & 23.8\% & 45.5\% \\
-GPT-5.2 & base & 6.0\% & 7.0\% & 87.0\% \\
-GPT-5.2 & think & 13.4\% & 9.8\% & 76.8\% \\
+\multicolumn{6}{@{}l}{\textit{Proprietary}} \\
+Gemini & base & 60.4 & 23.4 & 16.2 & 0.64 \\
+Gemini & think & 61.3 & 23.1 & 15.6 & 0.65 \\
+Opus 4.6 & base & 31.5 & 18.0 & 50.5 & 0.72 \\
+Opus 4.6 & think & 37.0 & 21.0 & 42.0 & 0.63 \\
+Sonnet 4.6 & base & 29.0 & 16.0 & 55.0 & 0.69 \\
+Sonnet 4.6 & think & 30.7 & 23.8 & 45.5 & 0.67 \\
+GPT-5.2 & base & 6.0 & 7.0 & 87.0 & 0.63 \\
+GPT-5.2 & think & 13.4 & 9.8 & 76.8 & 0.75 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Open-weight}} \\
+DeepSeek-V4-Pro & base & 20.5 & 13.0 & 66.5 & 0.70 \\
+DeepSeek-V4-Pro & think & 19.0 & 14.0 & 67.0 & 0.74 \\
+GLM-5.1 & base & 9.0 & 7.0 & 83.9 & 0.68 \\
+GLM-5.1 & think & 9.2 & 6.5 & 84.2 & 0.76 \\
+Qwen3.6-Plus & base & 7.1 & 4.5 & 88.4 & 0.77 \\
+Qwen3.6-Plus & think & 7.1 & 7.6 & 85.4 & 0.82 \\
 \bottomrule
 \end{tabular}
+\caption{LLM semantic judge results (Gemini 3 Flash Preview), L\textrightarrow E; Equiv/Partial/Not are percentages of judged pairs (equivalent / partially equivalent / not equivalent). $\kappa$ = Cohen's inter-judge agreement with an independent Llama-3.3-70B judge on each row's pairs. \texttt{base}/\texttt{think} = reasoning disabled/enabled.}
+\label{tab:judge}
 \end{table}
 
-The judge reveals that chrF++ is a reasonable proxy for models with higher equivalence rates---Gemini's chrF++ of 58.4 corresponds to 60.4\% semantic equivalence---but misleading for models with lower rates. GPT-5.2's chrF++ of 26.4 implies some partial overlap, but only 6\% of its translations are semantically correct. The remaining 87\% are fluent English that does not preserve the source meaning (Appendix~\ref{app:hallucination}).
+The judge reveals that chrF++ is a reasonable proxy for models with higher equivalence rates---Gemini's chrF++ of 58.4 corresponds to 60.4\% semantic equivalence---but misleading for models with lower rates. GPT-5.2's chrF++ of 26.4 implies some partial overlap, but only 6\% of its translations are semantically correct. The remaining 87\% are fluent English that does not preserve the source meaning (Table~\ref{tab:hallucination}).
 
-Across models, 16--24\% of translations are \textit{partially equivalent}---capturing the core meaning but missing elements or shifting emphasis. This reflects partial meaning preservation that binary scoring would obscure.
+Open-weight models do not close the gap. The strongest, DeepSeek-V4-Pro, reaches roughly 19--21\% equivalence---between GPT-5.2 and the Claude models---while GLM-5.1 and Qwen3.6-Plus remain at GPT-5.2's baseline tier (7--9\%). No open-weight model approaches Gemini.
 
-Extended thinking provides the largest benefit to the weakest model: GPT-5.2 improves from 6.0\% to 13.4\% equivalent (2.2$\times$), while Gemini barely changes (60.4\% to 61.3\%). This is consistent with the chrF++ thinking deltas (\S\ref{sec:thinking}): reasoning overhead helps most when the model has partial knowledge to surface.
+For the stronger models, 16--24\% of translations are \textit{partially equivalent}---capturing the core meaning but missing elements or shifting emphasis---a band that binary scoring would obscure.
+
+Extended thinking provides the largest benefit to the weakest \textit{proprietary} model: GPT-5.2 improves from 6.0\% to 13.4\% equivalent (2.2$\times$), while Gemini barely changes (60.4\% to 61.3\%), consistent with the chrF++ thinking deltas (\S\ref{sec:thinking}). The open-weight models behave differently: reasoning leaves their semantic equivalence essentially unchanged (DeepSeek $-1.5$, Qwen $0.0$, GLM $+0.2$ points) while increasing their refusal rates (\S\ref{sec:refusals}).
+
+\subsection{Qualitative Error Analysis}
+\label{sec:qualitative}
+
+Reading the lowest-scoring Lakota\textrightarrow English items reveals a consistent failure mode: compositional translation, rendering idioms and culturally specific vocabulary element by element rather than by conventional meaning. The word glossed ``electricity'' is rendered ``sacred,'' and the idiom \lak{Wakȟálya yo} (``make coffee'') becomes ``sanctify it'' (Table~\ref{tab:hallucination}). The starkest of these failures come from the open-weight models; on the same items the frontier models often recover the meaning---Gemini and Opus render \lak{Wakȟálya yo} as ``make coffee,'' and Sonnet translates the electricity sentence (chrF++ 58.2 vs.\ 18.6). The pattern is partly an artifact of evaluation design: dictionary example sentences over-represent idiomatic usage, and some literal renderings are defensible translations that the single idiomatic reference does not credit (\lak{Wakȟálya yo} $\rightarrow$ ``boil it''). Most failures, however, aren't defensible alternatives like this---the output simply doesn't match any plausible English translation of the source.
+
+\begin{table*}[t]
+\centering\small
+\begin{tabular}{@{}p{2.7cm}lp{3.6cm}p{3.6cm}r@{}}
+\toprule
+\textbf{Failure mode} & \textbf{Model} & \textbf{Reference} & \textbf{Model output} & \textbf{chrF++} \\
+\midrule
+Coined term read literally & DeepSeek & We live in a small trailer house with no electricity. & We are poor in a very small \textit{sacred} tipi. & 18.6 \\
+Idiom / phonological slide & DeepSeek & Make coffee (put the water to boil). & Sanctify it! & 2.9 \\
+Defensible literal (dictionary-bound) & Opus & Make coffee (put the water to boil). & Boil it! / Heat it up! & 6.5 \\
+Kinship confusion & GLM & Did my daughter call? & Did my younger brother come? & 27.6 \\
+Wrong content word & DeepSeek & Do you have a car? & Do you have a lighter? & 65.9 \\
+Fluent but unrelated & DeepSeek & I want to talk to you. & I will be very happy. & 6.5 \\
+\bottomrule
+\end{tabular}
+\caption{Representative L\textrightarrow E failure modes across models. chrF++ shows that surface overlap and meaning preservation diverge: a one-word near-miss (65.9) outscores output unrelated to the source. The two \lak{Wakȟálya yo} (``Make coffee'') rows contrast a genuine error (``Sanctify it'') with a defensible literal translation (``Boil it'') that the idiomatic single reference penalizes.}
+\label{tab:hallucination}
+\end{table*}
 
 \section{Discussion}
 
-The LLM judge results (\S3.6) demonstrate that chrF++ alone cannot reliably characterize model capability on low-resource translation. For Gemini, chrF++ of 58.4 closely tracks 60.4\% semantic equivalence---the paraphrase penalty is modest when the model produces semantically correct output. For Claude, chrF++ of $\sim$45 is slightly generous compared to 30--37\% equivalence. For GPT-5.2, chrF++ of 26.4 still implies some overlap, but only 6\% of translations are semantically correct---the remaining 87\% are fluent English that does not mean the right thing. Although BERTScore was uninformative as an absolute metric, the per-pair Pearson correlation between chrF++ and BERTScore descends in lockstep with actual semantic equivalence: Gemini $r$=0.91, Opus $r$=0.86, Sonnet $r$=0.83, GPT $r$=0.79. When the two metrics agree at the pair level, the model is doing something coherent; when they disagree, the model is producing fluent nonsense. This metric-agreement signal is computable without an LLM judge and could serve as a lightweight hallucination check for other low-resource evaluations.
+The LLM judge results (\S3.6) demonstrate that chrF++ alone cannot reliably characterize model capability on low-resource translation: it closely tracks semantic equivalence for the strongest models but is misleading for the weakest, where fluent English masks near-zero meaning preservation. The BERTScore check we set aside in \S\ref{sec:metrics} is nonetheless revealing. What was informative was the per-pair correlation between the two: chrF++ penalizes any surface deviation from the reference (a floor), while BERTScore rewards any fluent English (a ceiling), so the two diverge most for models producing fluent output unrelated to the source. For the proprietary models in the baseline condition, this correlation tracks the semantic-equivalence gradient (Gemini $r$=0.91; Opus and Sonnet $r$=0.83--0.86; GPT-5.2 $r$=0.79).
 
-For context, frontier models achieve chrF++ scores of 65--70 on high-resource pairs such as English--German \cite{jiao2023}; Gemini's 59.4 on Lakota\textrightarrow English is deceptively close to this range, but the 42.6 on English\textrightarrow Lakota reveals the actual capability gap. The AmericasNLP shared tasks report chrF++ of 16--28 for other indigenous languages \cite{americasnlp2023}, making Gemini's Lakota\textrightarrow English score notably higher than this range---though the comparison is not apples-to-apples, as those tasks evaluate fine-tuned NMT systems translating \textit{into} the indigenous language. For English\textrightarrow Lakota, no model exceeds chrF++ 42.6. These scores are inadequate for unsupervised translation use.
+For external calibration, strong systems reach chrF++ in the mid-50s on a high-resource pair such as Chinese\textrightarrow English \cite{jiao2023}; Gemini's 59.4 on Lakota\textrightarrow English sits at or above that range, yet its 42.6 on English\textrightarrow Lakota and 60.4\% semantic equivalence show the capability is far from what that single number suggests. For comparison within indigenous-language MT specifically, the AmericasNLP 2023 shared task reports ChrF of roughly 25--40 for the best fine-tuned systems translating into eleven indigenous languages \cite{americasnlp2023}; Gemini's zero-shot English\textrightarrow Lakota result is comparable to the strongest of these systems, though the metric (ChrF vs.\ chrF++) and system class (fine-tuned NMT vs.\ zero-shot LLM) differ.
 
-Extended thinking provides a consistent but small improvement (1--7 chrF++ points). This represents a 2--29\% relative improvement that does not change the practical assessment: models that produced unreliable translations without thinking produce slightly less unreliable translations with thinking. The improvement is larger on the harder E\textrightarrow L direction, suggesting reasoning overhead helps more on the lower-scoring direction. Gemini's baseline\textrightarrow thinking delta of +1.0 on L\textrightarrow E (\S\ref{sec:thinking}) is important context: since increasing Gemini's thinking from default to high had minimal effect on Lakota\textrightarrow English scores, Gemini's lead over the other models is primarily attributable to its base model weights or training data, not to reasoning overhead. The larger E\textrightarrow L delta (+2.2) suggests that higher reasoning settings provide some benefit on the harder generation task even when default thinking is already active.
+For the proprietary models, extended thinking yields a consistent but small chrF++ gain (1--7 points) that does not change the practical assessment; it is largest on the harder English\textrightarrow Lakota direction and for the weakest model (GPT-5.2, $+7.4$ points of semantic equivalence). It is not what separates the leaders: raising Gemini's reasoning from default to high moves Lakota\textrightarrow English by only +1.0 (\S\ref{sec:thinking}), suggesting its lead reflects base capability rather than reasoning budget. The open-weight models behave differently again---reasoning leaves their translation quality and semantic equivalence essentially flat while raising refusals (\S\ref{sec:refusals}), declining items rather than improving them. Taken together, these patterns suggest that on a language this far outside the training distribution, the binding constraint is knowledge rather than inference, and reasoning's main contribution is calibration---recognizing what one does not know---rather than capability.
 
-The wide per-pair variance ($\sigma$ = 22--28 chrF++ for L\textrightarrow E) likely reflects the distribution of Lakota text in training data. Common phrases such as \lak{Mázaska luhá he?} (``Do you have any money?'') score at or near 100.0 across all models, suggesting these phrases appear verbatim in training data. Culturally specific constructions involving kinship terms, complex verb morphology, or ceremonial language score near zero. The conversational score stratification (Table~\ref{tab:stratified}) confirms this pattern quantitatively: for every model and direction, score-6 pairs substantially outperform score-4 pairs. This suggests that model performance is concentrated on high-frequency phrasebook-like items rather than reflecting general capability across Lakota sentence types.
+The wide per-pair variance ($\sigma$ = 22--28 chrF++ for L\textrightarrow E) likely reflects the distribution of Lakota text in training data. Common phrases such as \lak{Mázaská etáŋ luhá he?} (``Do you have any money?'') score at or near 100.0 across nearly all models, suggesting these phrases appear verbatim in training data. Culturally specific constructions involving kinship terms, complex verb morphology, or ceremonial language score near zero. The conversational score stratification (Table~\ref{tab:stratified}) confirms this pattern quantitatively: for every model and direction, score-6 pairs substantially outperform score-4 pairs. This suggests that model performance is concentrated on high-frequency phrasebook-like items rather than reflecting general capability across Lakota sentence types.
 
 \section{Conclusion}
 
-No frontier LLM tested in March 2026 can reliably translate Lakota. The best Lakota\textrightarrow English performance (chrF++ 59.4) corresponds to 60.4\% semantic equivalence on conversational sentences, but the worst model (GPT-5.2) achieves only 6\% equivalence despite producing fluent English throughout. The best English\textrightarrow Lakota performance (chrF++ 42.6) is inadequate for unsupervised use. Extended thinking provides a modest improvement of 1--7 chrF++ points but does not change the practical assessment. Diacritic normalization analysis shows models produce roughly correct base characters but place diacritical marks inconsistently, possibly reflecting orthographic heterogeneity in training data.
-
-\section*{Ethics Statement}
-
-The evaluation corpus was drawn from the New Lakota Dictionary (NLD), a commercially published reference work. The corpus is used for research evaluation and is not redistributed. We acknowledge that orthographic standardization is a contested issue within Lakota communities \cite{hauff}, and that our use of NLD materials reflects availability rather than endorsement of any particular orthographic standard or institutional approach. Future work should evaluate against materials in other actively used orthographies, ideally in collaboration with language programs at tribal colleges and universities.
+As of spring 2026, no frontier LLM, proprietary or open-weight, can reliably translate Lakota. The best Lakota\textrightarrow English performance (chrF++ 59.4) corresponds to 60.4\% semantic equivalence on conversational sentences, but the worst model (GPT-5.2) achieves only 6\% equivalence despite producing fluent English throughout. Open-weight models do not close the gap: none approaches Gemini, and even the strongest (DeepSeek-V4-Pro) trails the proprietary leaders substantially. The best English\textrightarrow Lakota performance (chrF++ 42.6) is inadequate for unsupervised use. Extended thinking provides a modest improvement of 1--7 chrF++ points for the proprietary models but does not change the practical assessment; for the open-weight models it alters refusal behavior more than translation quality, surfacing the limitation rather than overcoming it. Diacritic normalization analysis shows models produce roughly correct base characters but place diacritical marks inconsistently, possibly reflecting orthographic heterogeneity in training data.
 
 \section*{Limitations}
 
-Each pair has one reference translation. Lakota allows multiple valid translations of a given English sentence and vice versa. chrF++ against a single reference underestimates model quality for valid translations that differ from the reference; the LLM judge partially mitigates this by accepting valid paraphrases, but cannot fully solve it. All semantic judgments come from a single judge model (Gemini 3 Flash Preview); inter-judge agreement is not assessed. The corpus consists of constructed conversational examples from a dictionary; performance on narrative text or spontaneous speech may differ. The baseline\textrightarrow thinking comparison reflects a bundled change from near-deterministic decoding to maximum supported reasoning settings rather than a clean ablation.
+Each pair has a single reference translation, and chrF++ against one reference underestimates quality for valid paraphrases; the LLM judge partially mitigates this but cannot fully solve it. Lakota also marks the speaker's gender through distinct enclitics---the dataset's \lak{Wakȟálya yo} (``make coffee'') uses the men's imperative particle, where a woman would say \lak{Wakȟálya ye}---so a single reference can penalize a valid rendering from the other speech register. The evaluation set consists of constructed conversational examples from the New Lakota Dictionary; performance on narrative or spontaneous text may differ.
 
-% NOTE: Comment out Acknowledgments and Author Contributions for [review] submission.
-% Restore for camera-ready.
+Although our open-web analysis (\S\ref{sec:contamination}) finds little verbatim overlap between the evaluation pairs and indexed text, contamination cannot be entirely excluded as a contributing factor. Constructing original Lakota--English pairs not derived from any published source would allow it to be ruled out decisively and is a priority for future work.
+
+No fluent Lakota speaker participated in the evaluation. Quality is assessed via established automatic metrics (chrF++) and LLM-based semantic judges (\S\ref{sec:metrics}); while both are standard practice in low-resource MT evaluation, neither substitutes for evaluation by fluent speakers, and qualitative analysis is correspondingly restricted to axes that do not require Lakota fluency. Collaboration with tribal-college language programs and fluent speakers is the most important methodological next step.
+
+This work evaluates only general-purpose frontier and open-weight LLMs without a fine-tuned dedicated MT baseline such as a Lakota-adapted NLLB-200; comparing zero-shot LLM performance against a fine-tuned low-resource NMT system on the same evaluation set would situate these results within the existing low-resource MT literature.
+
+The specific model versions evaluated reflect API availability in February--May 2026; provider model identities and behavior shift over time. The proprietary and open-weight models were evaluated in different months (\S2.8); the cross-provider comparison therefore reflects the model snapshots available at each evaluation rather than a synchronized run, and the relative ordering of comparably scoring models should be read with that in mind.
+
+\section*{Ethics Statement}
+
+The evaluation set was drawn from the New Lakota Dictionary (NLD), a commercially published reference work. The evaluation set is used for research evaluation and is not redistributed. We acknowledge that orthographic standardization is a contested issue within Lakota communities \cite{hauff}, and that our use of NLD materials reflects availability rather than endorsement of any particular orthographic standard or institutional approach. Future work should evaluate against materials in other actively used orthographies, ideally in collaboration with language programs at tribal colleges and universities.
 
 \section*{Acknowledgments}
 
@@ -335,58 +470,11 @@ The author used Claude (Anthropic) for editorial feedback, coding assistance, an
 
 \section*{Author Contributions}
 
-L.R.\ designed the study, curated the evaluation corpus, ran all evaluations, and made all methodological decisions.
+L.R.\ designed the study, curated the evaluation set, ran all evaluations, and made all methodological decisions.
 
 \section*{Data Availability}
 
-% NOTE: For [review] submission, replace URL with anonymous version or "available upon acceptance".
-Code and aggregate results are available at \url{https://github.com/robotson/lakota-translation-benchmark}. The evaluation corpus was sourced from the New Lakota Dictionary and is not redistributed; see \texttt{data/example\_pairs.json} for the data schema. Aggregate results are provided in \texttt{results/comparison.csv} and \texttt{results/llm\_judge\_summary.csv}. All code requires only API keys and \texttt{pip install litellm sacrebleu python-dotenv bert-score}.
-
-\appendix
-
-\section{Pilot Variance}
-\label{app:pilot}
-
-\begin{table}[h]
-\centering\small
-\caption{Pilot variance (20 pairs, 3 runs each)}
-\begin{tabular}{@{}llrr@{}}
-\toprule
-\textbf{Model} & \textbf{Dir} & \textbf{chrF++} & \textbf{$\sigma$} \\
-\midrule
-Gemini 3.1 Pro & L\textrightarrow E & 63.1 & 3.3 \\
-Gemini 3.1 Pro & E\textrightarrow L & 33.6 & 3.4 \\
-Claude Opus 4.6 & L\textrightarrow E & 45.1 & 2.6 \\
-Claude Opus 4.6 & E\textrightarrow L & 29.8 & 4.8 \\
-Claude Sonnet 4.6 & L\textrightarrow E & 42.7 & 4.8 \\
-Claude Sonnet 4.6 & E\textrightarrow L & 20.8 & 4.6 \\
-GPT-5.2 & L\textrightarrow E & 25.5 & 5.7 \\
-GPT-5.2 & E\textrightarrow L & 15.9 & 5.8 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Fluent Hallucination Examples}
-\label{app:hallucination}
-
-Table~\ref{tab:hallucination} illustrates GPT-5.2's pattern of producing fluent, structurally plausible English that does not preserve the source meaning. Several of these score well on chrF++ because the surface overlap is high---the errors are surgical: a reversed subject, a single wrong noun, a shifted pronoun.
-
-\begin{table}[h]
-\centering\small
-\caption{GPT-5.2 L\textrightarrow E translations judged \texttt{not\_equivalent} despite high chrF++.}
-\label{tab:hallucination}
-\begin{tabular}{@{}p{3.2cm}p{3.2cm}r@{}}
-\toprule
-\textbf{Reference} & \textbf{GPT-5.2 output} & \textbf{chrF++} \\
-\midrule
-I love my mother and father. & My mother and father love me. & 71.0 \\
-Do you have a car? & Do you have a horse? & 66.4 \\
-Do you like Indian food? & Do you like Lakota food? & 56.0 \\
-Do you like pastry? & Do you like the story? & 57.2 \\
-How many horses do you have? & How many horses do we have? & 42.0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+Code and aggregate results are available at \url{https://github.com/robotson/lakota-translation-benchmark}. The evaluation set was sourced from the New Lakota Dictionary and is not redistributed; see \texttt{data/example\_pairs.json} for the data schema. Aggregate results are provided in \texttt{results/comparison.csv} and \texttt{results/llm\_judge\_summary.csv}. All code requires only API keys and \texttt{pip install litellm sacrebleu python-dotenv bert-score}.
 
 \bibliography{references}
 

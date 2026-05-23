@@ -1,3 +1,14 @@
-litellm>=1.60
+# Security-floored 2026-05-16: minimums chosen so a fresh install cannot
+# pull a dependency (direct or transitive) with a known CVE.
+litellm>=1.83.11
 sacrebleu>=2.4
 python-dotenv>=1.0
+bert-score>=0.3.13
+
+# Security-critical transitive floors (CVE remediation 2026-05-16)
+aiohttp>=3.13.4
+urllib3>=2.7.0
+requests>=2.33.0
+pillow>=12.2.0
+lxml>=6.1.0
+pygments>=2.20.0
