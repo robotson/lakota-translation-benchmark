@@ -1,0 +1,237 @@
+% !TEX program = xelatex
+% AmericasNLP 2026 poster — A0 portrait. HERO-CHART structural variant (sandbox).
+% The divergence chart goes full-width as the visual centerpiece; supporting blocks below in a 3-col grid.
+\documentclass[final]{beamer}
+\usepackage[size=a0,orientation=portrait,scale=1.30]{beamerposter}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\usepackage{qrcode}
+\pgfplotsset{compat=1.17}
+\usefonttheme{professionalfonts}
+
+% --- Fonts ---
+\setmainfont{CharisSIL}[Ligatures=TeX,Extension={.ttf},UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-Bold,BoldItalicFont=*-BoldItalic]
+\newfontfamily\headfont{texgyreheros}[Ligatures=TeX,Extension={.otf},UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic]
+\renewcommand{\familydefault}{\rmdefault}
+\newcommand{\lak}[1]{\textit{#1}}
+
+% --- Palette ---
+\definecolor{ink}{HTML}{1A2333}
+\definecolor{accent}{HTML}{C0492B}
+\definecolor{steel}{HTML}{2E6E8E}
+\definecolor{paperbg}{HTML}{F6F3EC}
+\definecolor{midgray}{HTML}{5B6472}
+\definecolor{warmlight}{HTML}{E8C9B6}
+
+\setbeamercolor{background canvas}{bg=paperbg}
+\setbeamercolor{block title}{fg=paperbg,bg=ink}
+\setbeamercolor{block body}{fg=ink,bg=white}
+\setbeamerfont{block title}{family=\headfont,series=\bfseries,size=\large}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamertemplate{itemize items}[circle]
+\setbeamercolor{itemize item}{fg=accent}
+\setbeamercolor{itemize subitem}{fg=midgray}
+
+\begin{document}
+\begin{frame}[t]
+
+% ===================== TITLE BAND =====================
+\begin{beamercolorbox}[wd=\paperwidth,sep=22pt]{block title}
+\centering
+{\headfont\bfseries\fontsize{74}{86}\selectfont Can Frontier LLMs One-Shot Translate Lakota?\,\,{\itshape\color{warmlight}(Mostly No.)}}\\[10pt]
+{\headfont\itshape\fontsize{30}{38}\selectfont Evaluating Frontier LLM Translation Capability for Lakota}\\[8pt]
+{\headfont\fontsize{26}{32}\selectfont Lance Robertson\, \textperiodcentered\, University of California, San Diego\, \textperiodcentered\, AmericasNLP 2026}
+\end{beamercolorbox}
+
+\vspace{12pt}
+
+% ===================== HEADLINE STRIP =====================
+\begin{beamercolorbox}[wd=\paperwidth,sep=18pt]{block body}
+\centering
+{\headfont\bfseries\fontsize{62}{74}\selectfont No frontier LLM reliably translates Lakota.}\\[10pt]
+{\headfont\fontsize{38}{48}\selectfont And the standard surface metric (chrF++) hides how far short it falls.}
+\end{beamercolorbox}
+
+\vspace{14pt}
+
+% ===================== HERO CHART STRIP =====================
+\begin{beamercolorbox}[wd=\paperwidth,sep=22pt]{block body}
+\centering
+{\headfont\bfseries\fontsize{38}{46}\selectfont Surface metrics overstate capability}\\[14pt]
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=24pt, width=0.92\paperwidth, height=30cm,
+  enlarge x limits=0.06, ymin=0, ymax=80,
+  ylabel={\large score (Lakota\,$\rightarrow$\,English)},
+  symbolic x coords={Gemini,Opus,Sonnet,GPT,DeepSeek,GLM,Qwen},
+  xtick=data, x tick label style={font=\large},
+  ytick={0,20,40,60,80}, tick label style={font=\normalsize},
+  ymajorgrids=true, grid style={dashed,gray!35,thin},
+  legend style={at={(0.5,1.05)},anchor=south,legend columns=2,font=\Large,draw=none,fill=none},
+  axis lines=left,
+  nodes near coords, every node near coord/.append style={font=\normalsize,color=ink,/pgf/number format/.cd,fixed,fixed zerofill,precision=1},
+]
+\addplot[fill=steel,draw=none] coordinates {(Gemini,59.4)(Opus,45.9)(Sonnet,46.1)(GPT,30.0)(DeepSeek,38.0)(GLM,29.3)(Qwen,26.1)};
+\addplot[fill=accent,draw=none] coordinates {(Gemini,61.3)(Opus,37.0)(Sonnet,30.7)(GPT,13.4)(DeepSeek,19.0)(GLM,9.2)(Qwen,7.1)};
+\legend{chrF++,\% semantically equivalent}
+\end{axis}
+\end{tikzpicture}\\[18pt]
+{\headfont\bfseries\fontsize{120}{120}\selectfont\color{accent} 6\%\;$\rightarrow$\;60\%}\\[8pt]
+{\fontsize{28}{34}\selectfont semantic equivalence across the seven models tested}\\[10pt]
+\begin{minipage}{0.88\paperwidth}\centering
+{\fontsize{22}{28}\selectfont\color{midgray} chrF++ stays in the 30s--40s even where genuine semantic equivalence collapses below 15\%.\, The two metrics agree for the strongest model and diverge sharply for the rest --- so chrF++ alone is misleading for low-resource translation.\;\;\textperiodcentered\;\;best English\,$\rightarrow$\,Lakota: 42.6 chrF++\;\;\textperiodcentered\;\;two LLM judges from different families agree, $\kappa$\,=\,0.75 (0.89 weighted)}
+\end{minipage}
+\end{beamercolorbox}
+
+\vspace{18pt}
+
+% ===================== LOWER GRID (3 columns) =====================
+\begin{columns}[t]
+
+% ---------- COL A ----------
+\begin{column}{0.31\paperwidth}
+
+% Lakȟótiyapi typographic anchor
+\centering
+{\rmfamily\itshape\fontsize{50}{56}\selectfont\color{accent} Lakȟótiyapi}\\[2pt]
+{\fontsize{18}{22}\selectfont\color{midgray}\emph{the language under test}}
+\vspace{14pt}
+
+\begin{block}{Why test this?}
+\lak{Lakȟótiyapi} (Lakota) is a Siouan language UNESCO classifies as \textbf{critically endangered} --- fewer than 2,000 first-language speakers, most over 65. LLMs advertise multilingual translation, but coverage is undisclosed. For endangered languages with scarce digitized text, the assumption that a supported language ``works'' is \textbf{untestable without direct evaluation}.
+\end{block}
+
+\begin{block}{Setup}
+\begin{itemize}
+\item \textbf{7 models.} Proprietary: Gemini 3.1 Pro, Claude Opus 4.6, Claude Sonnet 4.6, GPT-5.2. Open-weight: DeepSeek-V4-Pro, Qwen3.6-Plus, GLM-5.1.
+\item \textbf{200 sentence pairs} from the New Lakota Dictionary, conversational register, \textbf{both directions}.
+\item \textbf{Two conditions:} baseline vs.\ extended reasoning.
+\item \textbf{Metrics:} chrF++ + BLEU; diacritic-normalized chrF++; an LLM \emph{semantic} judge.
+\end{itemize}
+\end{block}
+
+\begin{block}{Standard Lakota Orthography}
+SLO marks phonemic distinctions with diacritics that models often \emph{drop or rearrange}:
+\smallskip
+\begin{itemize}
+\item \lak{ȟ} (caron) vs.\ \lak{h} --- distinct consonants
+\item \lak{ą} \lak{į} \lak{ų} (ogonek) --- nasalized vowels
+\item \lak{á} (acute) --- stress\;\;\textperiodcentered\;\;\lak{ŋ} --- velar nasal\;\;\textperiodcentered\;\;\lak{ʼ} --- glottal stop
+\end{itemize}
+\smallskip
+Stripping the marks adds \textbf{+3.3 to +6.5 chrF++} on E\,$\rightarrow$\,L --- isolating orthographic from lexical error.
+\end{block}
+
+\end{column}
+
+% ---------- COL B ----------
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Translation quality (chrF++)}
+\centering\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Model} & \textbf{L\,$\rightarrow$\,E} & \textbf{E\,$\rightarrow$\,L} \\
+\midrule
+\multicolumn{3}{@{}l}{\itshape Proprietary}\\
+Gemini 3.1 Pro & \textbf{59.4} & \textbf{42.6} \\
+Claude Opus 4.6 & 45.9 & 34.3 \\
+Claude Sonnet 4.6 & 46.1 & 27.0 \\
+GPT-5.2 & 30.0 & 23.6 \\
+\midrule
+\multicolumn{3}{@{}l}{\itshape Open-weight}\\
+DeepSeek-V4-Pro & 38.0 & 29.2 \\
+GLM-5.1 & 29.3 & 14.6 \\
+Qwen3.6-Plus & 26.1 & 18.4 \\
+\bottomrule
+\end{tabular}
+\\[8pt]
+{\footnotesize Best condition per model. Every model scores higher \emph{out of} Lakota than \emph{into} it; no open-weight model approaches Gemini.}
+\end{block}
+
+\begin{block}{Semantic equivalence (L\,$\rightarrow$\,E)}
+\centering\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{Equiv.} & \textbf{Partial} & \textbf{Not} \\
+\midrule
+Gemini 3.1 Pro & \textbf{61.3} & 23.1 & 15.6 \\
+Claude Opus 4.6 & 37.0 & 21.0 & 42.0 \\
+Claude Sonnet 4.6 & 30.7 & 23.8 & 45.5 \\
+DeepSeek-V4-Pro & 19.0 & 14.0 & 67.0 \\
+GPT-5.2\textsuperscript{$\dagger$} & 13.4 & 9.8 & 76.8 \\
+GLM-5.1 & 9.2 & 6.5 & 84.2 \\
+Qwen3.6-Plus & 7.1 & 7.6 & 85.4 \\
+\bottomrule
+\end{tabular}
+\\[6pt]
+{\footnotesize \% of judged pairs, reasoning condition. \textsuperscript{$\dagger$}\,GPT-5.2 baseline\,=\,6.0\% / reasoning\,=\,13.4\%; the headline ``6\%'' is the baseline floor.}
+\end{block}
+
+\begin{block}{How models fail}
+\footnotesize
+\begin{tabular}{@{}p{0.40\linewidth}p{0.37\linewidth}r@{}}
+\toprule
+\textbf{Reference} & \textbf{Model output} & \textbf{chrF++} \\
+\midrule
+small trailer house with no electricity & ``small \textit{sacred} tipi'' & 18.6 \\[2pt]
+Make coffee (\lak{Wakȟálya yo}) & ``Sanctify it!'' & 2.9 \\[2pt]
+Did my daughter call? & ``Did my younger brother come?'' & 27.6 \\[2pt]
+Do you have a car? & ``Do you have a lighter?'' & 65.9 \\[2pt]
+I want to talk to you. & ``I will be very happy.'' & 6.5 \\
+\bottomrule
+\end{tabular}
+\\[6pt]
+{\footnotesize Idioms and coined terms translated \emph{element by element}: \lak{Wakȟálya yo} (``make coffee'') becomes ``sanctify it.'' The one-word near-miss (65.9) outscores output unrelated to the source.}
+\end{block}
+
+\end{column}
+
+% ---------- COL C ----------
+\begin{column}{0.31\paperwidth}
+
+\begin{block}{Why two judges?}
+chrF++ rewards surface overlap; it cannot distinguish fluent-but-wrong from correct. We judge \emph{meaning} with an LLM, English-to-English (no Lakota knowledge required). To rule out family-level self-judging bias, every pair is judged by \textbf{two models from different families} --- Gemini 3 Flash and the independent Llama-3.3-70B --- which agree substantially: Cohen's $\kappa=0.75$ (0.89 quadratic-weighted).
+\end{block}
+
+\begin{block}{Reasoning buys calibration, not capability}
+For the open-weight models, extended reasoning leaves translation quality and meaning \emph{flat} but raises \textbf{refusals}:
+\smallskip
+\begin{itemize}
+\item Qwen3.6-Plus, E\,$\rightarrow$\,L: \textbf{0\,$\rightarrow$\,36} refusals (of 200).
+\item GLM-5.1, L\,$\rightarrow$\,E: \textbf{1\,$\rightarrow$\,16}.
+\end{itemize}
+\smallskip
+Reasoning surfaces the limitation rather than overcoming it. The binding constraint is \textbf{knowledge, not inference}.
+\end{block}
+
+\begin{block}{Takeaways}
+\begin{itemize}
+\item No frontier LLM reliably translates Lakota in either direction (as of 2026).
+\item \textbf{chrF++ overstates} low-resource capability --- pair it with an LLM semantic judge.
+\item Open-weight models do not close the gap; reasoning changes \emph{refusals}, not quality.
+\end{itemize}
+\end{block}
+
+\begin{block}{Origin}
+{\small This evaluation began as a response to a provocation from Benjamin Bratton (UCSD): \emph{``just vibe-code a Lakota translation app over the weekend.''} We built the evaluation that would test whether such an app could exist.}
+\end{block}
+
+\vspace{6pt}
+\begin{beamercolorbox}[wd=0.31\paperwidth,sep=14pt]{block title}
+\centering
+\begin{minipage}{0.32\linewidth}\centering\qrcode[height=3.2cm,version=4]{https://github.com/robotson/lakota-translation-benchmark}\end{minipage}\hfill
+\begin{minipage}{0.62\linewidth}\raggedright
+{\headfont\bfseries Data \& code}\\[2pt]
+{\small github.com/robotson/\\lakota-translation-benchmark}\\[4pt]
+{\footnotesize Evaluation corpus withheld (community data); the repo holds scripts, aggregate results, and the paper.}
+\end{minipage}
+\end{beamercolorbox}
+
+\end{column}
+\end{columns}
+
+\end{frame}
+\end{document}
