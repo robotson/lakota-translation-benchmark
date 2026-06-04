@@ -15,6 +15,8 @@
 \newfontfamily\headfont{texgyreheros}[Ligatures=TeX,Extension={.otf},UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic]
 \renewcommand{\familydefault}{\rmdefault} % body in Charis SIL, not beamer's default sans
 \newcommand{\lak}[1]{\textit{#1}}
+% Tufte-style inline micro-bar for a chrF++ value (max ~100; scale ~0.018cm/point)
+\newcommand{\microbar}[1]{\tikz[baseline=-0.45ex]\fill[midgray!75] (0,0) rectangle (#1*0.018cm,0.55em);}
 
 % --- Palette ---
 \definecolor{ink}{HTML}{1A2333}      % deep slate
@@ -220,10 +222,10 @@ Qwen3.6-Plus & 7.1 & 7.6 & 85.4 \\
 \toprule
 \textbf{Reference} & \textbf{Model} & \textbf{Output} & \textbf{chrF++} \\
 \midrule
-We live in a small trailer house with no electricity. & DeepSeek & ``small \textit{sacred} tipi'' & 18.6 \\[2pt]
-Make coffee (\lak{Wakȟálya yo}). & DeepSeek & ``Sanctify it!'' & 2.9 \\[2pt]
-Did my daughter call? & GLM & ``Did my younger brother come?'' & 27.6 \\[2pt]
-Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & 66.4 \\
+We live in a small trailer house with no electricity. & DeepSeek & ``small \textit{sacred} tipi'' & \microbar{18.6}\,18.6 \\[2pt]
+Make coffee (\lak{Wakȟálya yo}). & DeepSeek & ``Sanctify it!'' & \microbar{2.9}\,2.9 \\[2pt]
+Did my daughter call? & GLM & ``Did my younger brother come?'' & \microbar{27.6}\,27.6 \\[2pt]
+Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & \microbar{66.4}\,66.4 \\
 \bottomrule
 \end{tabular}
 \\[8pt]
