@@ -73,7 +73,11 @@
 \lak{Lakȟótiyapi} (Lakota) is a Siouan language UNESCO classifies as \textbf{critically endangered} --- fewer than 2,000 first-language speakers, most over 65.
 \medskip
 
-Today's LLMs advertise translation across dozens of languages, but training-data coverage is undisclosed. Users reasonably assume a supported language works. For an endangered language with scarce digitized text, that assumption is \textbf{untestable without direct evaluation}.
+Today's LLMs list translation support across dozens of languages, but providers don't say what they can or can't do per language. A reasonable user can't tell Lakota apart from any of the others on the list --- \emph{if it does all these, why not this one?} Direct evaluation is the only way to find out.
+\end{block}
+
+\begin{block}{Is it just memorized?}
+The evaluation set comes from a published dictionary, so contamination is the obvious worry. The Lakota source appears verbatim online for ${\sim}$10\% of pairs, but the Lakota and its English reference together for only 0.5\%. Scores spread widely (6--61\% equivalence), not clustered at ceiling --- the signature of partial capability, not recall.
 \end{block}
 
 \begin{block}{Setup}
@@ -86,21 +90,15 @@ Today's LLMs advertise translation across dozens of languages, but training-data
 \end{block}
 
 \begin{block}{Why two judges?}
-chrF++ rewards surface overlap; it cannot distinguish fluent-but-wrong from correct. We judge \emph{meaning} with an LLM, English-to-English (no Lakota knowledge required). To rule out family-level self-judging bias, every pair is judged by \textbf{two models from different families} --- Gemini 3 Flash and the independent Llama-3.3-70B --- which agree substantially: Cohen's $\kappa=0.75$ (0.89 quadratic-weighted).
+chrF++ rewards surface overlap; it cannot tell fluent-but-wrong from correct. Meaning needs a separate check. For Lakota\,$\rightarrow$\,English the model output \emph{is} English, so judging meaning takes no Lakota at all --- that's what made an LLM judge feasible.
+\medskip
+
+To keep one model from flattering its own family, every pair is judged by \textbf{two models from different families} --- Gemini 3 Flash and the independent Llama-3.3-70B --- which agree substantially: Cohen's $\kappa=0.75$ (0.89 quadratic-weighted).
 \end{block}
 
 \begin{block}{Standard Lakota Orthography}
-SLO marks phonemic distinctions with diacritics that models often \emph{drop or rearrange}:
-\smallskip
-\begin{itemize}
-\item \lak{ȟ} (caron) vs.\ \lak{h} --- distinct consonants
-\item \lak{ą} \lak{į} \lak{ų} (ogonek) --- nasalized vowels
-\item \lak{á} (acute) --- stress
-\item \lak{ŋ} --- velar nasal
-\item \lak{ʼ} --- glottal stop
-\end{itemize}
-\smallskip
-Stripping the marks adds \textbf{+3.3 to +6.5 chrF++} on English\,$\rightarrow$\,Lakota --- isolating orthographic from lexical error: models get the base characters roughly right and the marks inconsistent.
+\begin{center}{\Large \lak{ȟ}\quad\lak{ą}\quad\lak{į}\quad\lak{ų}\quad\lak{á}\quad\lak{ŋ}\quad\lak{ʼ}}\end{center}
+SLO encodes phonemic distinctions with diacritics; stripping them adds \textbf{+3.3 to +6.5 chrF++} (E\,$\rightarrow$\,L) --- models get base characters right, marks wrong.
 \end{block}
 
 \end{column}
