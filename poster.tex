@@ -32,6 +32,18 @@
 \setbeamerfont{block title}{family=\headfont,series=\bfseries,size=\large}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{blocks}[rounded][shadow=false]
+% A little extra padding inside blocks (default sep=2ex feels cramped at A0)
+\setbeamertemplate{block begin}{%
+  \begin{beamercolorbox}[colsep*=.75ex,sep=14pt,rounded=true]{block title}%
+    \usebeamerfont*{block title}\insertblocktitle%
+  \end{beamercolorbox}%
+  \nointerlineskip\vskip-0.5pt%
+  \begin{beamercolorbox}[colsep*=.75ex,sep=14pt,rounded=true,vmode]{block body}%
+}
+\setbeamertemplate{block end}{%
+  \end{beamercolorbox}%
+  \vskip\smallskipamount%
+}
 \setbeamertemplate{itemize items}[circle]
 \setbeamercolor{itemize item}{fg=accent}
 \setbeamercolor{itemize subitem}{fg=midgray}
