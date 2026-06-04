@@ -91,11 +91,8 @@ The evaluation set comes from a published dictionary, so contamination is the ob
 \end{itemize}
 \end{block}
 
-\begin{block}{Why two judges?}
-chrF++ rewards surface overlap; it cannot tell fluent-but-wrong from correct. Meaning needs a separate check. For Lakota\,$\rightarrow$\,English the model output \emph{is} English, so judging meaning takes no Lakota at all --- that's what made an LLM judge feasible.
-\medskip
-
-To keep one model from flattering its own family, every pair is judged by \textbf{two models from different families} --- Gemini 3 Flash and the independent Llama-3.3-70B --- which agree substantially: Cohen's $\kappa=0.75$ (0.89 quadratic-weighted).
+\begin{block}{LLM-as-judge for L\,$\rightarrow$\,E}
+chrF++ measures character and word overlap, but it can reward plausible nonsense. We wanted an automated measure that could take meaning into account. We use an LLM-as-judge: for the L\,$\rightarrow$\,E direction the output is English, so a model can assess whether each translation carries the reference's meaning. To keep the judge from favoring its own family, every pair is scored by two LLMs from different families, Gemini 3 Flash and an independent Llama-3.3-70B. They agree substantially (Cohen's $\kappa=0.75$, 0.89 quadratic-weighted), so the judgments are cross-validated rather than one model's unchecked read.
 \end{block}
 
 \begin{block}{Standard Lakota Orthography}
