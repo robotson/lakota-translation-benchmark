@@ -103,9 +103,36 @@ SLO encodes phonemic distinctions with diacritics; stripping them adds \textbf{+
 
 \end{column}
 
-% ---------- COLUMN 2 ----------
-\begin{column}{0.31\paperwidth}
+% ---------- WIDE RIGHT (chart spans 2 cols; tables + failure beneath) ----------
+\begin{column}{0.64\paperwidth}
 
+\begin{block}{Surface metrics overstate capability}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=22pt, width=0.62\paperwidth, height=24cm,
+  enlarge x limits=0.06, ymin=0, ymax=80,
+  ylabel={\large score (Lakota\,$\rightarrow$\,English)},
+  symbolic x coords={Gemini,Opus,Sonnet,GPT,DeepSeek,GLM,Qwen},
+  xtick=data, x tick label style={font=\normalsize},
+  ytick={0,20,40,60,80}, tick label style={font=\small},
+  ymajorgrids=true, grid style={dashed,gray!35,thin},
+  legend style={at={(0.5,1.04)},anchor=south,legend columns=2,font=\large,draw=none,fill=none},
+  axis lines=left,
+  nodes near coords, every node near coord/.append style={font=\footnotesize,color=ink,/pgf/number format/.cd,fixed,fixed zerofill,precision=1},
+]
+\addplot[fill=steel,draw=none] coordinates {(Gemini,59.4)(Opus,45.9)(Sonnet,46.1)(GPT,30.0)(DeepSeek,38.0)(GLM,29.3)(Qwen,26.1)};
+\addplot[fill=accent,draw=none] coordinates {(Gemini,61.3)(Opus,37.0)(Sonnet,30.7)(GPT,13.4)(DeepSeek,19.0)(GLM,9.2)(Qwen,7.1)};
+\legend{chrF++,\% semantically equivalent}
+\end{axis}
+\end{tikzpicture}
+\\[8pt]
+{\footnotesize The picture shows the divergence; the tables below prove it. chrF++ stays in the 30s--40s even where genuine semantic equivalence collapses below 15\%. The two metrics agree for the strongest model and diverge sharply for the rest --- so chrF++ alone is misleading for low-resource translation.}
+\end{block}
+
+% --- Two tables side by side beneath the chart ---
+\begin{columns}[t]
+\begin{column}{0.49\textwidth}
 \begin{block}{Translation quality (chrF++)}
 \centering\small
 \begin{tabular}{@{}lcc@{}}
@@ -124,34 +151,11 @@ GLM-5.1 & 29.3 & 14.6 \\
 Qwen3.6-Plus & 26.1 & 18.4 \\
 \bottomrule
 \end{tabular}
-\\[8pt]
-{\footnotesize Best condition per model. Every model scores higher \emph{out of} Lakota than \emph{into} it; no open-weight model approaches Gemini.}
+\\[6pt]
+{\footnotesize Best condition per model. Every model scores higher \emph{out of} Lakota than \emph{into} it.}
 \end{block}
-
-\begin{block}{Surface metrics overstate capability}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-  ybar, bar width=14pt, width=0.30\paperwidth, height=27cm,
-  enlarge x limits=0.08, ymin=0, ymax=80,
-  ylabel={\small score (Lakota\,$\rightarrow$\,English)},
-  symbolic x coords={Gemini,Opus,Sonnet,GPT,DeepSeek,GLM,Qwen},
-  xtick=data, x tick label style={rotate=35,anchor=east,font=\footnotesize},
-  ytick={0,20,40,60,80}, tick label style={font=\footnotesize},
-  ymajorgrids=true, grid style={dashed,gray!35,thin},
-  legend style={at={(0.5,1.05)},anchor=south,legend columns=2,font=\normalsize,draw=none,fill=none},
-  axis lines=left,
-  nodes near coords, every node near coord/.append style={font=\scriptsize,color=ink,/pgf/number format/.cd,fixed,fixed zerofill,precision=1},
-]
-\addplot[fill=steel,draw=none] coordinates {(Gemini,59.4)(Opus,45.9)(Sonnet,46.1)(GPT,30.0)(DeepSeek,38.0)(GLM,29.3)(Qwen,26.1)};
-\addplot[fill=accent,draw=none] coordinates {(Gemini,61.3)(Opus,37.0)(Sonnet,30.7)(GPT,13.4)(DeepSeek,19.0)(GLM,9.2)(Qwen,7.1)};
-\legend{chrF++,\% semantically equivalent}
-\end{axis}
-\end{tikzpicture}
-\\[8pt]
-{\footnotesize chrF++ stays in the 30s--40s even where genuine semantic equivalence collapses below 15\%. The two metrics agree for the strongest model and diverge sharply for the rest --- so chrF++ alone is misleading for low-resource translation.}
-\end{block}
-
+\end{column}
+\begin{column}{0.49\textwidth}
 \begin{block}{Semantic equivalence (L\,$\rightarrow$\,E)}
 \centering\small
 \begin{tabular}{@{}lccc@{}}
@@ -170,12 +174,14 @@ Qwen3.6-Plus & 7.1 & 7.6 & 85.4 \\
 \\[6pt]
 {\footnotesize \% of judged pairs, reasoning condition.}
 \end{block}
-
 \end{column}
+\end{columns}
 
-% ---------- COLUMN 3 ----------
-\begin{column}{0.31\paperwidth}
+\vspace{6pt}
 
+% --- Failure table | Takeaways + Origin + QR side by side ---
+\begin{columns}[t]
+\begin{column}{0.49\textwidth}
 \begin{block}{How models fail}
 \footnotesize
 \begin{tabular}{@{}p{0.34\linewidth}lp{0.30\linewidth}r@{}}
@@ -191,7 +197,8 @@ Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & 66.4 \\
 \\[8pt]
 {\footnotesize Idioms and coined terms are translated \emph{element by element}: \lak{Wakȟálya yo} (``make coffee,'' literally ``make it boil'') becomes ``sanctify it.'' A one-word near-miss --- ``car'' rendered ``horse'' by a \emph{frontier} model --- still scores 66.4 chrF++. Surface overlap and meaning preservation diverge.}
 \end{block}
-
+\end{column}
+\begin{column}{0.49\textwidth}
 \begin{block}{Takeaways}
 \begin{itemize}
 \item No frontier LLM reliably translates Lakota, either direction (2026).
@@ -207,15 +214,16 @@ Extended reasoning changes refusal behavior more than quality (open-weight E\,$\
 \end{block}
 
 \vspace{6pt}
-\begin{beamercolorbox}[wd=0.31\paperwidth,sep=14pt]{block title}
+\begin{beamercolorbox}[wd=\linewidth,sep=14pt]{block title}
 \centering
-\begin{minipage}{0.32\linewidth}\centering\qrcode[height=3.2cm,version=4]{https://github.com/robotson/lakota-translation-benchmark}\end{minipage}\hfill
+\begin{minipage}{0.32\linewidth}\centering\qrcode[height=2.6cm,version=4]{https://github.com/robotson/lakota-translation-benchmark}\end{minipage}\hfill
 \begin{minipage}{0.62\linewidth}\raggedright
 {\headfont\bfseries Data \& code}\\[2pt]
-{\small github.com/robotson/\\lakota-translation-benchmark}\\[4pt]
-{\footnotesize Evaluation corpus withheld (community data); the repo holds scripts, aggregate results, and the paper.}
+{\small github.com/robotson/\\lakota-translation-benchmark}
 \end{minipage}
 \end{beamercolorbox}
+\end{column}
+\end{columns}
 
 \end{column}
 \end{columns}
