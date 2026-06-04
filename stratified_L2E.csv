@@ -1,0 +1,22 @@
+model,direction,conversational_score,n_pairs,chrf_pp_mean
+Gemini 3.1 Pro,L->E,4,113,52.7
+Gemini 3.1 Pro,L->E,5,46,58.2
+Gemini 3.1 Pro,L->E,6,34,81.9
+Claude Opus 4.6,L->E,4,114,41.6
+Claude Opus 4.6,L->E,5,46,41.0
+Claude Opus 4.6,L->E,6,34,65.6
+Claude Sonnet 4.6,L->E,4,107,40.3
+Claude Sonnet 4.6,L->E,5,44,45.1
+Claude Sonnet 4.6,L->E,6,32,64.1
+GPT-5.2,L->E,4,112,27.9
+GPT-5.2,L->E,5,44,23.7
+GPT-5.2,L->E,6,32,45.7
+DeepSeek-V4-Pro,L->E,4,114,33.0
+DeepSeek-V4-Pro,L->E,5,46,33.9
+DeepSeek-V4-Pro,L->E,6,34,59.6
+GLM-5.1,L->E,4,104,27.3
+GLM-5.1,L->E,5,42,26.0
+GLM-5.1,L->E,6,33,41.0
+Qwen3.6-Plus,L->E,4,113,23.3
+Qwen3.6-Plus,L->E,5,45,22.1
+Qwen3.6-Plus,L->E,6,34,41.7

@@ -1,0 +1,66 @@
+% !TEX program = xelatex
+% Standalone slope figure: chrF++ by conversational score, Lakota→English, thinking condition.
+% All numbers verified to match paper Table 4 exactly for L→E (computed from
+% canonical per-pair snapshot, commit 484efa1). Not yet placed in poster.tex —
+% Lance to decide whether/where it lands.
+\documentclass[tikz,border=14pt]{standalone}
+\usepackage{fontspec}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+\setmainfont{CharisSIL}[Ligatures=TeX,Extension={.ttf},UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-Bold,BoldItalicFont=*-BoldItalic]
+\newfontfamily\headfont{texgyreheros}[Ligatures=TeX,Extension={.otf},UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic]
+\renewcommand{\familydefault}{\rmdefault}
+
+\definecolor{ink}{HTML}{1A2333}
+\definecolor{accent}{HTML}{C0492B}
+\definecolor{midgray}{HTML}{5B6472}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+  width=26cm, height=18cm,
+  xmin=3.7, xmax=6.65,
+  ymin=15, ymax=90,
+  xtick={4,5,6}, xticklabels={4\\\footnotesize\itshape more formal,5,6\\\footnotesize\itshape most conversational},
+  x tick label style={text width=2.5cm, align=center, font=\normalsize, yshift=-2pt},
+  xlabel={conversational score (NLD curation tier)},
+  xlabel style={font=\large, yshift=-14pt},
+  ytick={20,40,60,80}, y tick label style={font=\small,color=midgray},
+  ylabel={chrF++ (Lakota\,$\rightarrow$\,English, thinking condition)},
+  ylabel style={font=\large},
+  ymajorgrids=true, grid style={dashed,gray!30,thin},
+  axis lines=left,
+  clip=false,
+]
+% Gemini (highlight)
+\addplot[accent, very thick, mark=*, mark size=3pt] coordinates {(4,52.7)(5,58.2)(6,81.9)};
+\node[anchor=west, font=\normalsize\bfseries, color=accent, xshift=4pt] at (axis cs:6,81.9) {Gemini};
+
+% Opus
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,41.6)(5,41.0)(6,65.6)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt] at (axis cs:6,65.6) {Opus};
+
+% Sonnet (close to Opus on right - nudge label down)
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,40.3)(5,45.1)(6,64.1)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt, yshift=-4pt] at (axis cs:6,64.1) {Sonnet};
+
+% DeepSeek
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,33.0)(5,33.9)(6,59.6)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt] at (axis cs:6,59.6) {DeepSeek};
+
+% GPT-5.2 (a bit above Qwen on right; nudged up)
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,27.9)(5,23.7)(6,45.7)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt, yshift=3pt] at (axis cs:6,45.7) {GPT-5.2};
+
+% Qwen (close to GPT and GLM on right)
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,23.3)(5,22.1)(6,41.7)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt, yshift=4pt] at (axis cs:6,41.7) {Qwen};
+
+% GLM (just below Qwen on right - nudged down)
+\addplot[ink, thick, mark=*, mark size=2pt] coordinates {(4,27.3)(5,26.0)(6,41.0)};
+\node[anchor=west, font=\small\bfseries, color=ink, xshift=4pt, yshift=-4pt] at (axis cs:6,41.0) {GLM};
+
+\end{axis}
+\end{tikzpicture}
+\end{document}
