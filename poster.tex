@@ -237,6 +237,13 @@ Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & \microbar{66.4}\,66.4 
 \\[8pt]
 {\footnotesize Idioms and coined terms are translated \emph{element by element}: \lak{Wakȟálya yo} (``make coffee,'' literally ``make it boil'') becomes ``sanctify it.'' A one-word near-miss --- ``car'' rendered ``horse'' by a \emph{frontier} model --- still scores 66.4 chrF++. Surface overlap and meaning preservation diverge.}
 \end{block}
+
+\begin{block}{Phrasebook concentration (L\,$\rightarrow$\,E)}
+\centering
+\includegraphics[width=\linewidth]{gradient_L2E.pdf}
+\\[4pt]
+{\footnotesize chrF++ stratified by the NLD's conversational score (4 = more formal/complex, 6 = most conversational). Every model lifts sharply at score 6 --- performance concentrates on high-frequency, phrasebook-like items rather than reflecting general capability.}
+\end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
 \begin{block}{Takeaways}
