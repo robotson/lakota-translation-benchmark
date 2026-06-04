@@ -193,23 +193,14 @@ I want to talk to you. & ``I will be very happy.'' & 6.5 \\
 {\footnotesize Idioms and coined terms are translated \emph{element by element}: \lak{Wakȟálya yo} (``make coffee,'' literally ``make it boil'') becomes ``sanctify it.'' The one-word near-miss (65.9) outscores output unrelated to the source --- surface overlap and meaning preservation diverge.}
 \end{block}
 
-\begin{block}{Reasoning buys calibration, not capability}
-For the open-weight models, extended reasoning leaves translation quality and meaning \emph{flat} but raises \textbf{refusals}:
-\smallskip
-\begin{itemize}
-\item Qwen3.6-Plus, E\,$\rightarrow$\,L: \textbf{0\,$\rightarrow$\,36} refusals (of 200) when reasoning is enabled.
-\item GLM-5.1, L\,$\rightarrow$\,E: \textbf{1\,$\rightarrow$\,16}.
-\end{itemize}
-\smallskip
-Reasoning surfaces the limitation rather than overcoming it. On a language this far outside the training distribution, the binding constraint is \textbf{knowledge, not inference} --- reasoning's contribution is calibration, not capability.
-\end{block}
-
 \begin{block}{Takeaways}
 \begin{itemize}
-\item No frontier LLM reliably translates Lakota in either direction (as of 2026).
-\item \textbf{chrF++ overstates} low-resource capability --- pair it with an LLM semantic judge.
-\item Open-weight models do not close the gap; reasoning changes \emph{refusals}, not quality.
+\item No frontier LLM reliably translates Lakota, either direction (2026).
+\item chrF++ overstates low-resource capability --- pair it with a meaning check.
+\item Open-weight doesn't close the gap.
 \end{itemize}
+\smallskip
+Extended reasoning changes refusal behavior more than quality (open-weight E\,$\rightarrow$\,L: \textbf{0\,$\rightarrow$\,36} refusals when enabled).
 \end{block}
 
 \begin{block}{Origin}
