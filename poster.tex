@@ -240,9 +240,54 @@ Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & \microbar{66.4}\,66.4 
 
 \begin{block}{Phrasebook concentration (L\,$\rightarrow$\,E)}
 \centering
-\includegraphics[width=\linewidth]{gradient_L2E.pdf}
-\\[4pt]
-{\footnotesize chrF++ stratified by the NLD's conversational score (4 = more formal/complex, 6 = most conversational). Every model lifts sharply at score 6 --- performance concentrates on high-frequency, phrasebook-like items rather than reflecting general capability.}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.30\paperwidth, height=22cm,
+  xmin=3.7, xmax=6.65,
+  ymin=15, ymax=90,
+  xtick={4,5,6},
+  x tick label style={font=\Large\bfseries},
+  ytick={20,40,60,80},
+  y tick label style={font=\large, color=midgray},
+  ylabel={\large chrF++ (L\,$\rightarrow$\,E)},
+  xlabel={\large conversational score},
+  xlabel style={yshift=-4pt},
+  ymajorgrids=true, grid style={dashed,gray!30,thin},
+  axis lines=left,
+  clip=false,
+]
+% Gemini (highlight)
+\addplot[accent, very thick, mark=*, mark size=4pt] coordinates {(4,52.7)(5,58.2)(6,81.9)};
+\node[anchor=west, font=\large\bfseries, color=accent, xshift=4pt] at (axis cs:6,81.9) {Gemini};
+
+% Opus
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,41.6)(5,41.0)(6,65.6)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,65.6) {Opus};
+
+% Sonnet (close to Opus; nudge down)
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,40.3)(5,45.1)(6,64.1)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=-12pt] at (axis cs:6,64.1) {Sonnet};
+
+% DeepSeek
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,33.0)(5,33.9)(6,59.6)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,59.6) {DeepSeek};
+
+% GPT-5.2
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,27.9)(5,23.7)(6,45.7)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,45.7) {GPT-5.2};
+
+% Qwen (close to GLM; nudge up)
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,23.3)(5,22.1)(6,41.7)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=6pt] at (axis cs:6,41.7) {Qwen};
+
+% GLM (just below Qwen; nudge down)
+\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,27.3)(5,26.0)(6,41.0)};
+\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=-12pt] at (axis cs:6,41.0) {GLM};
+
+\end{axis}
+\end{tikzpicture}
+\\[6pt]
+{\footnotesize chrF++ stratified by the NLD's conversational score: 4 = more formal/complex, 6 = most conversational. Every model lifts sharply at score 6 --- performance concentrates on high-frequency, phrasebook-like items rather than reflecting general capability.}
 \end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
