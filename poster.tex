@@ -110,24 +110,56 @@ SLO encodes phonemic distinctions with diacritics; stripping them adds \textbf{+
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  ybar, bar width=22pt, width=0.62\paperwidth, height=24cm,
-  enlarge x limits=0.06, ymin=0, ymax=80,
+  width=0.62\paperwidth, height=24cm,
+  xmin=-0.22, xmax=1.10,
+  ymin=0, ymax=70,
+  xtick={0,1}, xticklabels={\textbf{chrF++}, \textbf{\% equivalent}},
+  x tick label style={font=\large,yshift=-4pt},
+  ytick={0,20,40,60}, y tick label style={font=\small,color=midgray},
   ylabel={\large score (Lakota\,$\rightarrow$\,English)},
-  symbolic x coords={Gemini,Opus,Sonnet,GPT,DeepSeek,GLM,Qwen},
-  xtick=data, x tick label style={font=\normalsize},
-  ytick={0,20,40,60,80}, tick label style={font=\small},
-  ymajorgrids=true, grid style={dashed,gray!35,thin},
-  legend style={at={(0.5,1.04)},anchor=south,legend columns=2,font=\large,draw=none,fill=none},
+  ylabel style={font=\large},
+  ymajorgrids=true, grid style={dashed,gray!30,thin},
   axis lines=left,
-  nodes near coords, every node near coord/.append style={font=\footnotesize,color=ink,/pgf/number format/.cd,fixed,fixed zerofill,precision=1},
+  clip=false,
 ]
-\addplot[fill=steel,draw=none] coordinates {(Gemini,59.4)(Opus,45.9)(Sonnet,46.1)(GPT,30.0)(DeepSeek,38.0)(GLM,29.3)(Qwen,26.1)};
-\addplot[fill=accent,draw=none] coordinates {(Gemini,61.3)(Opus,37.0)(Sonnet,30.7)(GPT,13.4)(DeepSeek,19.0)(GLM,9.2)(Qwen,7.1)};
-\legend{chrF++,\% semantically equivalent}
+% Gemini — highlight: the only flat/up line (metrics agree)
+\addplot[accent, very thick, mark=*, mark size=3.5pt] coordinates {(0,59.4) (1,61.3)};
+\node[anchor=east, font=\normalsize\bfseries, color=accent, xshift=-6pt] at (axis cs:0,59.4) {Gemini 59.4};
+\node[anchor=west, font=\normalsize\bfseries, color=accent, xshift=6pt] at (axis cs:1,61.3) {61.3};
+
+% Sonnet (close to Opus on left — label nudged up)
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,46.1) (1,30.7)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt, yshift=6pt] at (axis cs:0,46.1) {Sonnet 46.1};
+\node[anchor=west, font=\small, color=ink, xshift=6pt] at (axis cs:1,30.7) {30.7};
+
+% Opus (close to Sonnet on left — label nudged down)
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,45.9) (1,37.0)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt, yshift=-7pt] at (axis cs:0,45.9) {Opus 45.9};
+\node[anchor=west, font=\small, color=ink, xshift=6pt] at (axis cs:1,37.0) {37.0};
+
+% DeepSeek
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,38.0) (1,19.0)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt] at (axis cs:0,38.0) {DeepSeek 38.0};
+\node[anchor=west, font=\small, color=ink, xshift=6pt] at (axis cs:1,19.0) {19.0};
+
+% GPT-5.2 (close to GLM on left — nudged up)
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,30.0) (1,13.4)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt, yshift=5pt] at (axis cs:0,30.0) {GPT-5.2 30.0};
+\node[anchor=west, font=\small, color=ink, xshift=6pt, yshift=4pt] at (axis cs:1,13.4) {13.4};
+
+% GLM (close to GPT on left — nudged down)
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,29.3) (1,9.2)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt, yshift=-6pt] at (axis cs:0,29.3) {GLM 29.3};
+\node[anchor=west, font=\small, color=ink, xshift=6pt] at (axis cs:1,9.2) {9.2};
+
+% Qwen
+\addplot[ink, thick, mark=*, mark size=2.5pt] coordinates {(0,26.1) (1,7.1)};
+\node[anchor=east, font=\small\bfseries, color=ink, xshift=-6pt] at (axis cs:0,26.1) {Qwen 26.1};
+\node[anchor=west, font=\small, color=ink, xshift=6pt, yshift=-4pt] at (axis cs:1,7.1) {7.1};
 \end{axis}
 \end{tikzpicture}
-\\[8pt]
-{\footnotesize The picture shows the divergence; the tables below prove it. chrF++ stays in the 30s--40s even where genuine semantic equivalence collapses below 15\%. The two metrics agree for the strongest model and diverge sharply for the rest --- so chrF++ alone is misleading for low-resource translation.}
+\\[10pt]
+{\footnotesize The picture shows the divergence; the tables below prove it. Gemini's two scores almost agree (\textcolor{accent}{terracotta}, the only flat/up line). For every other model, surface chrF++ stays in the 30s--40s while genuine meaning preservation collapses below 20\% --- chrF++ alone is misleading for low-resource translation.}
 \end{block}
 
 % --- Two tables side by side beneath the chart ---
