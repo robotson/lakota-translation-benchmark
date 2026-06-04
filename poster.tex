@@ -17,6 +17,15 @@
 \newcommand{\lak}[1]{\textit{#1}}
 % Tufte-style inline micro-bar for a chrF++ value (max ~100; scale ~0.018cm/point)
 \newcommand{\microbar}[1]{\tikz[baseline=-0.45ex]\fill[midgray!75] (0,0) rectangle (#1*0.018cm,0.55em);}
+% Tufte sparkline: 3-point mini-slope at shared y-scale (0–100); compact for table cells
+\newcommand{\sparkline}[3]{%
+  \begin{tikzpicture}[x=0.20cm,y=0.0085cm,baseline=2pt]
+    \draw[steel,line width=0.7pt] (0,#1) -- (4,#2) -- (8,#3);
+    \fill[steel] (0,#1) circle (1.1pt);
+    \fill[steel] (4,#2) circle (1.1pt);
+    \fill[steel] (8,#3) circle (1.1pt);
+  \end{tikzpicture}%
+}
 
 % --- Palette ---
 \definecolor{ink}{HTML}{1A2333}      % deep slate
@@ -238,56 +247,23 @@ Do you have a car? & GPT-5.2 & ``Do you have a horse?'' & \microbar{66.4}\,66.4 
 {\footnotesize Idioms and coined terms are translated \emph{element by element}: \lak{Wakȟálya yo} (``make coffee,'' literally ``make it boil'') becomes ``sanctify it.'' A one-word near-miss --- ``car'' rendered ``horse'' by a \emph{frontier} model --- still scores 66.4 chrF++. Surface overlap and meaning preservation diverge.}
 \end{block}
 
-\begin{block}{Phrasebook concentration (L\,$\rightarrow$\,E)}
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-  width=0.30\paperwidth, height=22cm,
-  xmin=3.7, xmax=6.65,
-  ymin=15, ymax=90,
-  xtick={4,5,6},
-  x tick label style={font=\Large\bfseries},
-  ytick={20,40,60,80},
-  y tick label style={font=\large, color=midgray},
-  ylabel={\large chrF++ (L\,$\rightarrow$\,E)},
-  xlabel={\large conversational score},
-  xlabel style={yshift=-4pt},
-  ymajorgrids=true, grid style={dashed,gray!30,thin},
-  axis lines=left,
-  clip=false,
-]
-% Gemini (highlight)
-\addplot[accent, very thick, mark=*, mark size=4pt] coordinates {(4,52.7)(5,58.2)(6,81.9)};
-\node[anchor=west, font=\large\bfseries, color=accent, xshift=4pt] at (axis cs:6,81.9) {Gemini};
-
-% Opus
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,41.6)(5,41.0)(6,65.6)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,65.6) {Opus};
-
-% Sonnet (close to Opus; nudge down)
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,40.3)(5,45.1)(6,64.1)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=-12pt] at (axis cs:6,64.1) {Sonnet};
-
-% DeepSeek
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,33.0)(5,33.9)(6,59.6)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,59.6) {DeepSeek};
-
-% GPT-5.2
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,27.9)(5,23.7)(6,45.7)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt] at (axis cs:6,45.7) {GPT-5.2};
-
-% Qwen (close to GLM; nudge up)
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,23.3)(5,22.1)(6,41.7)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=6pt] at (axis cs:6,41.7) {Qwen};
-
-% GLM (just below Qwen; nudge down)
-\addplot[ink, thick, mark=*, mark size=3pt] coordinates {(4,27.3)(5,26.0)(6,41.0)};
-\node[anchor=west, font=\normalsize\bfseries, color=ink, xshift=4pt, yshift=-12pt] at (axis cs:6,41.0) {GLM};
-
-\end{axis}
-\end{tikzpicture}
-\\[6pt]
-{\footnotesize chrF++ stratified by the NLD's conversational score: 4 = more formal/complex, 6 = most conversational. Every model lifts sharply at score 6 --- performance concentrates on high-frequency, phrasebook-like items rather than reflecting general capability.}
+\begin{block}{Phrasebook concentration (L\,$\rightarrow$\,E chrF++)}
+\centering\small
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{Model} & \textbf{Sc.\,4} & \textbf{Sc.\,5} & \textbf{Sc.\,6} & \textbf{$\Delta$} & \textbf{trend} \\
+\midrule
+Gemini 3.1 Pro & 52.7 & 58.2 & \textbf{81.9} & +29.2 & \sparkline{52.7}{58.2}{81.9} \\
+Claude Opus 4.6 & 41.6 & 41.0 & 65.6 & +24.0 & \sparkline{41.6}{41.0}{65.6} \\
+Claude Sonnet 4.6 & 40.3 & 45.1 & 64.1 & +23.8 & \sparkline{40.3}{45.1}{64.1} \\
+DeepSeek-V4-Pro & 33.0 & 33.9 & 59.6 & +26.6 & \sparkline{33.0}{33.9}{59.6} \\
+GPT-5.2 & 27.9 & 23.7 & 45.7 & +17.8 & \sparkline{27.9}{23.7}{45.7} \\
+Qwen3.6-Plus & 23.3 & 22.1 & 41.7 & +18.4 & \sparkline{23.3}{22.1}{41.7} \\
+GLM-5.1 & 27.3 & 26.0 & 41.0 & +13.7 & \sparkline{27.3}{26.0}{41.0} \\
+\bottomrule
+\end{tabular}
+\\[8pt]
+{\footnotesize Score 4 = more formal/complex, 6 = most conversational (NLD curation tier). Every model lifts sharply at 6: performance concentrates on high-frequency phrasebook-like items rather than reflecting general capability. Sparklines share a 0--100 y-axis, so row height encodes absolute score.}
 \end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
